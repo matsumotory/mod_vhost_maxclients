@@ -1,0 +1,5 @@
+mod_vhost_maxclients.la
+mod_vhost_maxclients.lo
+mod_vhost_maxclients.o
+mod_vhost_maxclients.slo
+.libs
