@@ -11,6 +11,7 @@ If you have a performance issue using mod_vhost_maxclients like over-head of ser
 
 ```
 make
+make install
 ```
 
 - conf.d/mod_vhost_maxclients.conf
