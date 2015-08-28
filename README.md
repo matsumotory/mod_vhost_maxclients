@@ -31,9 +31,9 @@ include /path/to/vhost.conf
     ServerName test001.example.jp
 
     # MaxClients per vhost using mod_vhost_maxclients
-    VhostMaxClients 3
+    VhostMaxClients 30
     # Ignore extensions from VhostMaxClients for a performance issue
-    IgnoreVhostMaxClientsExt .html .js .css
+    # IgnoreVhostMaxClientsExt .html .js .css
 
 </VirtualHost>
 ```
