@@ -2,7 +2,7 @@
 
 MaxClients per vhost, no using shared memory and global lock. 
 
-mod_vhost_maxclients uses only the scoreboad of httpd for simple implementation and compatibility.
+mod_vhost_maxclients uses only the scoreboad of httpd for simple implementation and compatibility, supports Apache httpd both 2.2.x and 2.4.x.
 
 If you have a performance issue using mod_vhost_maxclients like over-head of serving static contents, You should use `IgnoreVhostMaxClientsExt` for ignoring the static contents.
 
