@@ -2,9 +2,9 @@
 
 MaxClients per vhost, no using shared memory and global lock. 
 
-mod_vhost_maxclients use only scoreboad for simple implementation and compatibility.
+mod_vhost_maxclients uses only the scoreboad of httpd for simple implementation and compatibility.
 
-If you have a performance problem using mod_vhost_maxclients, You should use `IgnoreVhostMaxClientsExt` for ignoring static contents.
+If you have a performance issue using mod_vhost_maxclients like over-head of serving static contents, You should use `IgnoreVhostMaxClientsExt` for ignoring the static contents.
 
 # Quick Install
 - build
@@ -13,15 +13,16 @@ If you have a performance problem using mod_vhost_maxclients, You should use `Ig
 make
 ```
 
-- mod_vhost_maxclients.conf
+- conf.d/mod_vhost_maxclients.conf
 
-```
+```apache
 LoadModule vhost_maxclients_module modules/mod_vhost_maxclients.so
 # mod_vhost_maxclinets use scoreboard
 ExtendedStatus On
+include /path/to/vhost.conf
 ```
 
-- vhost.conf
+- /path/to/vhost.conf
 
 ```apache
 <VirtualHost *>
@@ -30,7 +31,7 @@ ExtendedStatus On
 
     # MaxClients per vhost using mod_vhost_maxclients
     VhostMaxClients 3
-    # Ignore extensions from VhostMaxClients
+    # Ignore extensions from VhostMaxClients for a performance issue
     IgnoreVhostMaxClientsExt .html .js .css
 
 </VirtualHost>
