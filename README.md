@@ -46,3 +46,9 @@ include /path/to/vhost.conf
 [Thu Aug 27 21:16:54.540716 2015] [vhost_maxclients:debug] [pid 23981] mod_vhost_maxclients.c(93): DEBUG: (increment test001.example.jp:80): 4/3
 [Thu Aug 27 21:16:54.540726 2015] [vhost_maxclients:notice] [pid 23981] NOTICE: (return 503 from test001.example.jp:80): 4/3
 ```
+
+# License
+under the MIT License:
+
+* http://www.opensource.org/licenses/mit-license.php
+
