@@ -1,6 +1,10 @@
-# mod_vhost_maxclients
+# mod_vhost_maxclients  [![Build Status](https://travis-ci.org/matsumoto-r/mod_vhost_maxclients.svg?branch=master)](https://travis-ci.org/matsumoto-r/mod_vhost_maxclients)
 
-MaxClients per vhost, no using shared memory and global lock. mod_vhost_maxclients use only scoreboad for simple implementation.
+MaxClients per vhost, no using shared memory and global lock. 
+
+mod_vhost_maxclients use only scoreboad for simple implementation and compatibility.
+
+If you have a performance problem using mod_vhost_maxclients, You should use `IgnoreVhostMaxClientsExt` for ignoring static contents.
 
 # Quick Install
 - build
