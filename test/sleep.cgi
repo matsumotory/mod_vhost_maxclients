@@ -2,6 +2,6 @@
 
 echo -ne "Content-Type: text/html; charset=UTF-8\r\n\r\n"
 
-sleep 2
+sleep 5
 
 echo "sleep done"
