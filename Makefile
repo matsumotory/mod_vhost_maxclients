@@ -32,14 +32,18 @@ install: all
 clean:
 	-rm -rf .libs *.o *.so *.lo *.la *.slo *.loT
 
-#   reload the module by installing and restarting Apache
-reload: install restart
-
 #   the general Apache start/restart/stop procedures
 start:
-	$(APACHECTL) start
+	$(APACHECTL) -k start
 restart:
-	$(APACHECTL) restart
+	$(APACHECTL) -k restart
 stop:
-	$(APACHECTL) stop
+	$(APACHECTL) -k stop
 
+test:
+	git clone --recursive https://github.com/matsumoto-r/ab-mruby.git
+	cd ab-mruby && make
+	cd ab-mruby && ./ab-mruby -m ../test/check1.rb -M ../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
+	cd ab-mruby && ./ab-mruby -m ../test/check.rb -M ../test/test.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
+
+.PHONY: test

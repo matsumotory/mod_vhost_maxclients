@@ -1,28 +1,56 @@
 language: c
 compiler:
   - gcc
-  - clang
 before_install:
   - sudo apt-get -qq update
 install:
   - sudo apt-get -qq install rake bison libcurl4-openssl-dev libhiredis-dev libmarkdown2-dev libapr1-dev libaprutil1-dev apache2 libcap-dev
 env:
   - HTTPD_VERSION=httpd-2.2.31
+    HTTPD_CONFIG_OPT="--with-mpm=worker --enable-module=all --enable-mods-shared=all"
     APR=apr-1.5.2 
     APR_UTIL=apr-util-1.5.4 
     HTTPD_TAR=${HTTPD_VERSION}.tar.gz 
     APR_TAR=${APR}.tar.gz 
     APR_UTIL_TAR=${APR_UTIL}.tar.gz 
-    HTTPD_CONFIG_OPT="--enable-module=all --enable-mods-shared=all"
     APXS_CHECK_CMD="../${HTTPD_VERSION}/apache/bin/apachectl -v"
+    VHOST_CONF="test/mod_vhost_maxclients.conf.2.2"
+  - HTTPD_VERSION=httpd-2.2.31
+    HTTPD_CONFIG_OPT="--with-mpm=prefork --enable-module=all --enable-mods-shared=all"
+    APR=apr-1.5.2 
+    APR_UTIL=apr-util-1.5.4 
+    HTTPD_TAR=${HTTPD_VERSION}.tar.gz 
+    APR_TAR=${APR}.tar.gz 
+    APR_UTIL_TAR=${APR_UTIL}.tar.gz 
+    APXS_CHECK_CMD="../${HTTPD_VERSION}/apache/bin/apachectl -v"
+    VHOST_CONF="test/mod_vhost_maxclients.conf.2.2"
   - HTTPD_VERSION=httpd-2.4.16 
+    HTTPD_CONFIG_OPT="--with-mpm=event"
     APR=apr-1.5.2 
     APR_UTIL=apr-util-1.5.4 
     HTTPD_TAR=${HTTPD_VERSION}.tar.gz 
     APR_TAR=${APR}.tar.gz 
     APR_UTIL_TAR=${APR_UTIL}.tar.gz 
-    HTTPD_CONFIG_OPT=
     APXS_CHECK_CMD="../${HTTPD_VERSION}/apache/bin/apachectl -v"
+    VHOST_CONF="test/mod_vhost_maxclients.conf.2.4"
+  - HTTPD_VERSION=httpd-2.4.16 
+    HTTPD_CONFIG_OPT="--with-mpm=worker"
+    APR=apr-1.5.2 
+    APR_UTIL=apr-util-1.5.4 
+    HTTPD_TAR=${HTTPD_VERSION}.tar.gz 
+    APR_TAR=${APR}.tar.gz 
+    APR_UTIL_TAR=${APR_UTIL}.tar.gz 
+    APXS_CHECK_CMD="../${HTTPD_VERSION}/apache/bin/apachectl -v"
+    VHOST_CONF="test/mod_vhost_maxclients.conf.2.4"
+  - HTTPD_VERSION=httpd-2.4.16 
+    HTTPD_CONFIG_OPT="--with-mpm=prefork"
+    APR=apr-1.5.2 
+    APR_UTIL=apr-util-1.5.4 
+    HTTPD_TAR=${HTTPD_VERSION}.tar.gz 
+    APR_TAR=${APR}.tar.gz 
+    APR_UTIL_TAR=${APR_UTIL}.tar.gz 
+    APXS_CHECK_CMD="../${HTTPD_VERSION}/apache/bin/apachectl -v"
+    VHOST_CONF="test/mod_vhost_maxclients.conf.2.4.prefork"
 before_script:
   - cd ../
   - wget http://ftp.jaist.ac.jp/pub/apache//httpd/${HTTPD_TAR}
@@ -43,3 +71,14 @@ script:
   - echo ${APXS_CHECK_CMD}
   - ${APXS_CHECK_CMD}
   - make APXS=../${HTTPD_VERSION}/apache/bin/apxs
+  - sudo cp test/sleep.cgi $(../${HTTPD_VERSION}/apache/bin/apxs -q exp_cgidir)/
+  - sudo sed -i "s/^Listen/#Listen/" $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
+  - sudo sed -i "s|__VHOST_DOCROOT__|$(../${HTTPD_VERSION}/apache/bin/apxs -q htdocsdir)|" ${VHOST_CONF}
+  - sudo cat ${VHOST_CONF} >> $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
+  - sudo make APXS=../${HTTPD_VERSION}/apache/bin/apxs APACHECTL=../${HTTPD_VERSION}/apache/bin/apachectl install
+  - sudo make APXS=../${HTTPD_VERSION}/apache/bin/apxs APACHECTL=../${HTTPD_VERSION}/apache/bin/apachectl restart
+  - sudo netstat -lnpt
+  - sudo cat $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
+  - curl -v -H "Host:test001.example.local" http://127.0.0.1:8080/cgi-bin/sleep.cgi
+  - make test
+  - sudo cat $(../${HTTPD_VERSION}/apache/bin/apxs -q exp_logfiledir)/error_log

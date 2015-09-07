@@ -101,6 +101,7 @@ static int check_extension(char *filename, apr_array_header_t *exts)
 
 static char *build_vhostport_name(request_rec *r)
 {
+#ifdef __APACHE24__
   ssize_t vhostport_len;
   char *vhostport;
 
@@ -109,6 +110,9 @@ static char *build_vhostport_name(request_rec *r)
   apr_snprintf(vhostport, vhostport_len, "%s:%d", r->hostname, r->connection->local_addr->port);
 
   return vhostport;
+#else
+  return (char *)r->hostname;
+#endif
 }
 
 static int vhost_maxclients_handler(request_rec *r)
@@ -161,12 +165,19 @@ static int vhost_maxclients_handler(request_rec *r)
           ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "DEBUG: (increment %s): %d/%d", vhostport,
                        vhost_count, scfg->vhost_maxclients);
           if (vhost_count > scfg->vhost_maxclients) {
-            ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf, "NOTICE: (return 503 from %s): %d/%d", vhostport,
-                         vhost_count, scfg->vhost_maxclients);
+#ifdef __APACHE24__
+            ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
+                         "NOTICE: (return 503 from %s): %d/%d client_ip: %s uri: %s filename: %s", vhostport,
+                         vhost_count, scfg->vhost_maxclients, r->connection->client_ip, r->uri, r->filename);
+#else
+            ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
+                         "NOTICE: (return 503 from %s): %d/%d client_ip: %s uri: %s filename: %s", vhostport,
+                         vhost_count, scfg->vhost_maxclients, r->connection->remote_ip, r->uri, r->filename);
+#endif
             return HTTP_SERVICE_UNAVAILABLE;
           }
-          break;
         }
+        break;
       default:
         break;
       }
