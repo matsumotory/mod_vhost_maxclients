@@ -53,3 +53,4 @@ script:
   - sudo cat $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
   - curl -v -H "Host:test001.example.local" http://127.0.0.1:8080/index.html
   - make test
+  - sudo cat $(../${HTTPD_VERSION}/apache/bin/apxs -q exp_logfiledir)/error_log | grep vhost_maxclients
