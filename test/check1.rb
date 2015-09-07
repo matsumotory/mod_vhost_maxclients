@@ -14,8 +14,8 @@ unless target_hosts.include? get_config("TargetHost")
 end
 
 add_config(
-  "TotalRequests"         => 100,                       # int
-  "Concurrency"           => 1,                        # int max 20000
+  "TotalRequests"         => 10000,                       # int
+  "Concurrency"           => 20,                        # int max 20000
   "KeepAlive"             => true,                      # true or false or nil
   "ShowProgress"          => false,                      # true, false or nil
   "ShowPercentile"        => false,                      # true, false or nil

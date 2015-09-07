@@ -46,11 +46,11 @@ test_suite do
   "TargetServerPort".should_be               8080
   "TargetDocumentPath".should_be             "/index.html"
   "WriteErrors".should_be                    0
-  "CompleteRequests".should_be               100
+  "CompleteRequests".should_be               10000
   "ConnetcErrors".should_be                  0
   "ReceiveErrors".should_be                  0
   "ExceptionsErrors".should_be               0
-  "Non2xxResponses".should_be_over           70
+  "Non2xxResponses".should_be_over           7000
 end
 
 test_run
