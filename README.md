@@ -1,6 +1,8 @@
 # mod_vhost_maxclients  [![Build Status](https://travis-ci.org/matsumoto-r/mod_vhost_maxclients.svg?branch=master)](https://travis-ci.org/matsumoto-r/mod_vhost_maxclients)
 
-mod_vhost_maxclinets provides the feature of `MaxClients` per vhost, no using shared memory and global lock. This module use only scoreboad for stability(no dead-lock), high compatibility and simple implementation. It supports Apache httpd 2.0.x, 2.2.x and 2.4.x, and worker, prefork and event mpm.
+mod_vhost_maxclinets provides the feature of `MaxClients` per vhost, no using shared memory and global lock. This module use only scoreboad for stability(no dead-lock), high compatibility and simple implementation.
+
+It supports Apache httpd __2.2.x and 2.4.x__, and __worker, prefork and event mpm__.
 
 If you have a performance issue using mod_vhost_maxclients like over-head of serving static contents, You should use `IgnoreVhostMaxClientsExt` for ignoring the static contents.
 
