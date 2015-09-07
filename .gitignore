@@ -3,3 +3,4 @@ mod_vhost_maxclients.lo
 mod_vhost_maxclients.o
 mod_vhost_maxclients.slo
 .libs
+ab-mruby/

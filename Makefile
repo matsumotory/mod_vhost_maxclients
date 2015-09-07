@@ -43,3 +43,8 @@ restart:
 stop:
 	$(APACHECTL) stop
 
+test:
+	git clone --recursive https://github.com/matsumoto-r/ab-mruby.git
+	cd ab-mruby && make && ./ab-mruby -m ../test/check.rb -M ../test/test.rb http://127.0.0.1:8080/index.html
+
+.PHONY: test

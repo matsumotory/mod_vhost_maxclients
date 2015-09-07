@@ -43,3 +43,12 @@ script:
   - echo ${APXS_CHECK_CMD}
   - ${APXS_CHECK_CMD}
   - make APXS=../${HTTPD_VERSION}/apache/bin/apxs
+  - sudo mkdir -p /var/www/html
+  - sudo cp test/index.html /var/www/html/.
+  - sudo sed -i "s/^Listen/#Listen/" $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
+  - sudo cat test/mod_vhost_maxclients.conf >> $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
+  - sudo make APXS=../${HTTPD_VERSION}/apache/bin/apxs reload
+  - sudo netstat -lnpt
+  - sudo cat $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
+  - sudo cat $(../${HTTPD_VERSION}/apache/bin/apxs -q exp_logfiledir)/error_log
+  - make test
