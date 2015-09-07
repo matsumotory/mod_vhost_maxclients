@@ -14,6 +14,7 @@ env:
     APR_UTIL_TAR=${APR_UTIL}.tar.gz 
     HTTPD_CONFIG_OPT="--enable-module=all --enable-mods-shared=all"
     APXS_CHECK_CMD="../${HTTPD_VERSION}/apache/bin/apachectl -v"
+    VHOST_CONF="test/mod_vhost_maxclients.conf.2.2"
   - HTTPD_VERSION=httpd-2.4.16 
     APR=apr-1.5.2 
     APR_UTIL=apr-util-1.5.4 
@@ -22,6 +23,7 @@ env:
     APR_UTIL_TAR=${APR_UTIL}.tar.gz 
     HTTPD_CONFIG_OPT=
     APXS_CHECK_CMD="../${HTTPD_VERSION}/apache/bin/apachectl -v"
+    VHOST_CONF="test/mod_vhost_maxclients.conf.2.4"
 before_script:
   - cd ../
   - wget http://ftp.jaist.ac.jp/pub/apache//httpd/${HTTPD_TAR}
@@ -45,7 +47,7 @@ script:
   - sudo cp test/sleep.cgi $(../${HTTPD_VERSION}/apache/bin/apxs -q exp_cgidir)/
   - sudo sed -i "s/^Listen/#Listen/" $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
   - sudo sed -i "s|__VHOST_DOCROOT__|$(../${HTTPD_VERSION}/apache/bin/apxs -q htdocsdir)|" test/mod_vhost_maxclients.conf
-  - sudo cat test/mod_vhost_maxclients.conf >> $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
+  - sudo cat ${VHOST_CONF} >> $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
   - sudo make APXS=../${HTTPD_VERSION}/apache/bin/apxs APACHECTL=../${HTTPD_VERSION}/apache/bin/apachectl install
   - sudo make APXS=../${HTTPD_VERSION}/apache/bin/apxs APACHECTL=../${HTTPD_VERSION}/apache/bin/apachectl restart
   - sudo netstat -lnpt

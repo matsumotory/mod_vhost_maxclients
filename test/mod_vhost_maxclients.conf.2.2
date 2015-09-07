@@ -1,10 +1,8 @@
 Listen 127.0.0.1:8080
-LoadModule cgid_module modules/mod_cgid.so
+ExtendedStatus On
 
 <VirtualHost 127.0.0.1:8080>
-    ExtendedStatus On
-    LogLevel debug
     DocumentRoot __VHOST_DOCROOT__
     ServerName test001.example.local
-    VhostMaxClients 10
+    VhostMaxClients 5
 </VirtualHost>
