@@ -15,7 +15,7 @@ end
 
 add_config(
   "TotalRequests"         => 10,                       # int
-  "Concurrency"           => 5,                        # int max 20000
+  "Concurrency"           => 10,                        # int max 20000
   "KeepAlive"             => true,                      # true or false or nil
   "ShowProgress"          => false,                      # true, false or nil
   "ShowPercentile"        => false,                      # true, false or nil
