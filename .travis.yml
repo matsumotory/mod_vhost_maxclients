@@ -46,7 +46,7 @@ script:
   - make APXS=../${HTTPD_VERSION}/apache/bin/apxs
   - sudo cp test/sleep.cgi $(../${HTTPD_VERSION}/apache/bin/apxs -q exp_cgidir)/
   - sudo sed -i "s/^Listen/#Listen/" $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
-  - sudo sed -i "s|__VHOST_DOCROOT__|$(../${HTTPD_VERSION}/apache/bin/apxs -q htdocsdir)|" test/mod_vhost_maxclients.conf
+  - sudo sed -i "s|__VHOST_DOCROOT__|$(../${HTTPD_VERSION}/apache/bin/apxs -q htdocsdir)|" ${VHOST_CONF}
   - sudo cat ${VHOST_CONF} >> $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
   - sudo make APXS=../${HTTPD_VERSION}/apache/bin/apxs APACHECTL=../${HTTPD_VERSION}/apache/bin/apachectl install
   - sudo make APXS=../${HTTPD_VERSION}/apache/bin/apxs APACHECTL=../${HTTPD_VERSION}/apache/bin/apachectl restart
