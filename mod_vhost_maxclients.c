@@ -101,6 +101,7 @@ static int check_extension(char *filename, apr_array_header_t *exts)
 
 static char *build_vhostport_name(request_rec *r)
 {
+#ifdef __APACHE24__
   ssize_t vhostport_len;
   char *vhostport;
 
@@ -109,6 +110,9 @@ static char *build_vhostport_name(request_rec *r)
   apr_snprintf(vhostport, vhostport_len, "%s:%d", r->hostname, r->connection->local_addr->port);
 
   return vhostport;
+#else
+  return (char *)r->hostname;
+#endif
 }
 
 static int vhost_maxclients_handler(request_rec *r)
@@ -172,8 +176,8 @@ static int vhost_maxclients_handler(request_rec *r)
 #endif
             return HTTP_SERVICE_UNAVAILABLE;
           }
-          break;
         }
+        break;
       default:
         break;
       }
