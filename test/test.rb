@@ -50,7 +50,7 @@ test_suite do
   "ConnetcErrors".should_be                  0
   "ReceiveErrors".should_be                  0
   "ExceptionsErrors".should_be               0
-  "Non2xxResponses".should_be_over           10
+  "Non2xxResponses".should_be_over           5
 end
 
 test_run
