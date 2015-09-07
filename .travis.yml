@@ -47,8 +47,8 @@ script:
   - sudo cp test/index.html /var/www/html/.
   - sudo sed -i "s/^Listen/#Listen/" $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
   - sudo cat test/mod_vhost_maxclients.conf >> $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
-  - sudo make APXS=../${HTTPD_VERSION}/apache/bin/apxs APACHECTL=APXS=../${HTTPD_VERSION}/apache/bin/apachectl install
-  - sudo make APXS=../${HTTPD_VERSION}/apache/bin/apxs APACHECTL=APXS=../${HTTPD_VERSION}/apache/bin/apachectl restart
+  - sudo make APXS=../${HTTPD_VERSION}/apache/bin/apxs APACHECTL=../${HTTPD_VERSION}/apache/bin/apachectl install
+  - sudo make APXS=../${HTTPD_VERSION}/apache/bin/apxs APACHECTL=../${HTTPD_VERSION}/apache/bin/apachectl restart
   - sudo netstat -lnpt
   - sudo cat $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
   - make test
