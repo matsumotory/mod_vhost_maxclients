@@ -35,7 +35,7 @@ This is ab-mruby using ApacheBench Version 2.3 <$Revision: 1430300 $>
 Licensed to MATSUMOTO Ryosuke, https://github.com/matsumoto-r/ab-mruby
 
                             TEST PHASE
-           (concurrent connection over vhot maxclients)
+           (concurrent connection under vhot maxclients)
 
 ======================================================================
 EOS
@@ -50,7 +50,9 @@ test_suite do
   "ConnetcErrors".should_be                  0
   "ReceiveErrors".should_be                  0
   "ExceptionsErrors".should_be               0
-  "Non2xxResponses".should_be_over           70
+  "Non2xxResponses".should_be                0
+  "LengthErrors".should_be                   0
+  "FailedRequests".should_be                 0
 end
 
 test_run
