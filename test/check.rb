@@ -1,7 +1,7 @@
 # Usage: ./ab-mruby -m bench.rb [http[s]://]hostname[:port]/path
 
 target_hosts = ["127.0.0.1"]
-target_paths = ["/index.html"]
+target_paths = ["/cgi-bin/sleep.cgi"]
 
 unless target_paths.include? get_config("TargetPath")
   puts "invalid path #{get_config("TargetPath")}"
@@ -14,8 +14,8 @@ unless target_hosts.include? get_config("TargetHost")
 end
 
 add_config(
-  "TotalRequests"         => 10000,                       # int
-  "Concurrency"           => 100,                        # int max 20000
+  "TotalRequests"         => 10,                       # int
+  "Concurrency"           => 5,                        # int max 20000
   "KeepAlive"             => true,                      # true or false or nil
   "ShowProgress"          => false,                      # true, false or nil
   "ShowPercentile"        => false,                      # true, false or nil
