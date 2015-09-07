@@ -44,12 +44,10 @@ test_suite do
   "TargetServerHost".should_be               "127.0.0.1"
   "TargetServerPort".should_be               8080
   "TargetDocumentPath".should_be             "/index.html"
-  "FailedRequests".should_be_over            70
   "WriteErrors".should_be                    0
   "CompleteRequests".should_be               100
   "ConnetcErrors".should_be                  0
   "ReceiveErrors".should_be                  0
-  "LengthErrors".should_be_over              70
   "ExceptionsErrors".should_be               0
   "Non2xxResponses".should_be_over           70
 end
