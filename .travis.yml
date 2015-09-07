@@ -67,7 +67,6 @@ before_script:
   - make
   - make install
   - cd ../mod_vhost_maxclients
-script:
   - echo ${APXS_CHECK_CMD}
   - ${APXS_CHECK_CMD}
   - make APXS=../${HTTPD_VERSION}/apache/bin/apxs
@@ -77,8 +76,11 @@ script:
   - sudo cat ${VHOST_CONF} >> $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
   - sudo make APXS=../${HTTPD_VERSION}/apache/bin/apxs APACHECTL=../${HTTPD_VERSION}/apache/bin/apachectl install
   - sudo make APXS=../${HTTPD_VERSION}/apache/bin/apxs APACHECTL=../${HTTPD_VERSION}/apache/bin/apachectl restart
+  # debug
   - sudo netstat -lnpt
   - sudo cat $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
   - curl -v -H "Host:test001.example.local" http://127.0.0.1:8080/cgi-bin/sleep.cgi
+script:
   - make test
+  # debug
   - sudo cat $(../${HTTPD_VERSION}/apache/bin/apxs -q exp_logfiledir)/error_log
