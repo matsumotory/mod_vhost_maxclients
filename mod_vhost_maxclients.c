@@ -183,7 +183,11 @@ static int vhost_maxclients_handler(request_rec *r)
 
           /* check maxclients per ip in same vhost */
           if (scfg->vhost_maxclients_per_ip > 0) {
+#ifdef __APACHE24__
             if (strcmp(r->connection->client_ip, ws_record->client) == 0) {
+#else
+            if (strcmp(r->connection->remote_ip, ws_record->client) == 0) {
+#endif
               ip_count++;
               if (ip_count > scfg->vhost_maxclients_per_ip) {
 #ifdef __APACHE24__
