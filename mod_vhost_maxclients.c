@@ -73,6 +73,7 @@ typedef struct {
 
   /* vhost max clinetns */
   signed int vhost_maxclients;
+  signed int vhost_maxclients_per_ip;
   apr_array_header_t *ignore_extensions;
 
 } vhost_maxclients_config;
@@ -82,6 +83,7 @@ static void *vhost_maxclients_create_server_config(apr_pool_t *p, server_rec *s)
   vhost_maxclients_config *scfg = (vhost_maxclients_config *)apr_pcalloc(p, sizeof(*scfg));
 
   scfg->vhost_maxclients = 0;
+  scfg->vhost_maxclients_per_ip = 0;
   scfg->ignore_extensions = apr_array_make(p, VHOST_MAXEXTENSIONS, sizeof(char *));
 
   return scfg;
@@ -119,6 +121,7 @@ static int vhost_maxclients_handler(request_rec *r)
 {
   int i, j;
   int vhost_count = 0;
+  int ip_count = 0;
   char *vhostport;
   vhost_maxclients_config *scfg =
       (vhost_maxclients_config *)ap_get_module_config(r->server->module_config, &vhost_maxclients_module);
@@ -160,6 +163,7 @@ static int vhost_maxclients_handler(request_rec *r)
       case SERVER_BUSY_DNS:
       case SERVER_CLOSING:
       case SERVER_GRACEFUL:
+        /* check maxclients per vhost */
         if (strcmp(vhostport, ws_record->vhost) == 0) {
           vhost_count++;
           ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "DEBUG: (increment %s): %d/%d", vhostport,
@@ -167,14 +171,39 @@ static int vhost_maxclients_handler(request_rec *r)
           if (vhost_count > scfg->vhost_maxclients) {
 #ifdef __APACHE24__
             ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
-                         "NOTICE: return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s", vhostport,
-                         vhost_count, scfg->vhost_maxclients, r->connection->client_ip, r->uri, r->filename);
+                         "NOTICE: [VHOST_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
+                         vhostport, vhost_count, scfg->vhost_maxclients, r->connection->client_ip, r->uri, r->filename);
 #else
             ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
-                         "NOTICE: return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s", vhostport,
-                         vhost_count, scfg->vhost_maxclients, r->connection->remote_ip, r->uri, r->filename);
+                         "NOTICE: [VHOST_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
+                         vhostport, vhost_count, scfg->vhost_maxclients, r->connection->remote_ip, r->uri, r->filename);
 #endif
             return HTTP_SERVICE_UNAVAILABLE;
+          }
+
+          /* check maxclients per ip in same vhost */
+          if (scfg->vhost_maxclients_per_ip > 0) {
+#ifdef __APACHE24__
+            if (strcmp(r->connection->client_ip, ws_record->client) == 0) {
+#else
+            if (strcmp(r->connection->remote_ip, ws_record->client) == 0) {
+#endif
+              ip_count++;
+              if (ip_count > scfg->vhost_maxclients_per_ip) {
+#ifdef __APACHE24__
+                ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
+                             "NOTICE: [CLIENT_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
+                             vhostport, ip_count, scfg->vhost_maxclients_per_ip, r->connection->client_ip, r->uri,
+                             r->filename);
+#else
+                ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
+                             "NOTICE: [CLIENT_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
+                             vhostport, ip_count, scfg->vhost_maxclients_per_ip, r->connection->remote_ip, r->uri,
+                             r->filename);
+#endif
+                return HTTP_SERVICE_UNAVAILABLE;
+              }
+            }
           }
         }
         break;
@@ -203,6 +232,21 @@ static const char *set_vhost_maxclientsvhost(cmd_parms *parms, void *mconfig, co
   return NULL;
 }
 
+static const char *set_vhost_maxclientsvhost_perip(cmd_parms *parms, void *mconfig, const char *arg1)
+{
+  vhost_maxclients_config *scfg =
+      (vhost_maxclients_config *)ap_get_module_config(parms->server->module_config, &vhost_maxclients_module);
+  signed long int limit = strtol(arg1, (char **)NULL, 10);
+
+  if ((limit > 65535) || (limit < 0)) {
+    return "Integer overflow or invalid number";
+  }
+
+  scfg->vhost_maxclients_per_ip = limit;
+
+  return NULL;
+}
+
 static const char *set_vhost_ignore_extensions(cmd_parms *parms, void *mconfig, const char *arg)
 {
   vhost_maxclients_config *scfg =
@@ -220,6 +264,8 @@ static const char *set_vhost_ignore_extensions(cmd_parms *parms, void *mconfig, 
 static command_rec vhost_maxclients_cmds[] = {
     AP_INIT_TAKE1("VhostMaxClients", set_vhost_maxclientsvhost, NULL, RSRC_CONF | ACCESS_CONF,
                   "maximum connections per Vhost"),
+    AP_INIT_TAKE1("VhostMaxClientsPerIP", set_vhost_maxclientsvhost_perip, NULL, RSRC_CONF | ACCESS_CONF,
+                  "maximum connections per IP of Vhost"),
     AP_INIT_ITERATE("IgnoreVhostMaxClientsExt", set_vhost_ignore_extensions, NULL, ACCESS_CONF | RSRC_CONF,
                     "Set Ignore Extensions."),
     {NULL},
