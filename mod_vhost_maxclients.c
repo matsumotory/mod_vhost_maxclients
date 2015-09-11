@@ -171,12 +171,12 @@ static int vhost_maxclients_handler(request_rec *r)
           if (vhost_count > scfg->vhost_maxclients) {
 #ifdef __APACHE24__
             ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
-                         "NOTICE: [VHOST_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s", vhostport,
-                         vhost_count, scfg->vhost_maxclients, r->connection->client_ip, r->uri, r->filename);
+                         "NOTICE: [VHOST_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
+                         vhostport, vhost_count, scfg->vhost_maxclients, r->connection->client_ip, r->uri, r->filename);
 #else
             ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
-                         "NOTICE: [VHOST_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s", vhostport,
-                         vhost_count, scfg->vhost_maxclients, r->connection->remote_ip, r->uri, r->filename);
+                         "NOTICE: [VHOST_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
+                         vhostport, vhost_count, scfg->vhost_maxclients, r->connection->remote_ip, r->uri, r->filename);
 #endif
             return HTTP_SERVICE_UNAVAILABLE;
           }
@@ -187,13 +187,15 @@ static int vhost_maxclients_handler(request_rec *r)
               ip_count++;
               if (ip_count > scfg->vhost_maxclients_per_ip) {
 #ifdef __APACHE24__
-            ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
-                         "NOTICE: [CLIENT_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s", vhostport,
-                         ip_count, scfg->vhost_maxclients_per_ip, r->connection->client_ip, r->uri, r->filename);
+                ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
+                             "NOTICE: [CLIENT_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
+                             vhostport, ip_count, scfg->vhost_maxclients_per_ip, r->connection->client_ip, r->uri,
+                             r->filename);
 #else
-            ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
-                         "NOTICE: [CLIENT_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s", vhostport,
-                         ip_count, scfg->vhost_maxclients_per_ip, r->connection->remote_ip, r->uri, r->filename);
+                ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
+                             "NOTICE: [CLIENT_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
+                             vhostport, ip_count, scfg->vhost_maxclients_per_ip, r->connection->remote_ip, r->uri,
+                             r->filename);
 #endif
                 return HTTP_SERVICE_UNAVAILABLE;
               }
