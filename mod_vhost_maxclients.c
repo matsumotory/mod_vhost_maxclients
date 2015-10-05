@@ -83,10 +83,28 @@ static void *vhost_maxclients_create_server_config(apr_pool_t *p, server_rec *s)
 {
   vhost_maxclients_config *scfg = (vhost_maxclients_config *)apr_pcalloc(p, sizeof(*scfg));
 
-  scfg->dryrun = 0;
+  scfg->dryrun = -1;
   scfg->vhost_maxclients = 0;
   scfg->vhost_maxclients_per_ip = 0;
   scfg->ignore_extensions = apr_array_make(p, VHOST_MAXEXTENSIONS, sizeof(char *));
+
+  return scfg;
+}
+
+static void* vhost_maxclients_create_server_merge_conf(apr_pool_t* p, void* b, void* n)
+{
+  vhost_maxclients_config *base = (vhost_maxclients_config *)b;
+  vhost_maxclients_config *new = (vhost_maxclients_config *)n;
+  vhost_maxclients_config *scfg = (vhost_maxclients_config *)apr_pcalloc(p, sizeof(*scfg));
+
+  if (new->dryrun > -1) {
+      scfg->dryrun = new->dryrun;
+  } else {
+      scfg->dryrun = base->dryrun;
+  }
+  scfg->vhost_maxclients = new->vhost_maxclients;
+  scfg->vhost_maxclients_per_ip = new->vhost_maxclients_per_ip;
+  scfg->ignore_extensions = new->ignore_extensions;
 
   return scfg;
 }
@@ -176,7 +194,7 @@ static int vhost_maxclients_handler(request_rec *r)
           ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "DEBUG: (increment %s): %d/%d", vhostport,
                        vhost_count, scfg->vhost_maxclients);
           if (vhost_count > scfg->vhost_maxclients) {
-            if (scfg->dryrun) {
+            if (scfg->dryrun > 0) {
               ap_log_error(
                   APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
                   "NOTICE: [DRY-RUN] [VHOST_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
@@ -186,7 +204,7 @@ static int vhost_maxclients_handler(request_rec *r)
                            "NOTICE: [VHOST_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
                            vhostport, vhost_count, scfg->vhost_maxclients, client_ip, r->uri, r->filename);
             }
-            return (scfg->dryrun) ? DECLINED : HTTP_SERVICE_UNAVAILABLE;
+            return (scfg->dryrun > 0) ? DECLINED : HTTP_SERVICE_UNAVAILABLE;
           }
 
           /* check maxclients per ip in same vhost */
@@ -194,7 +212,7 @@ static int vhost_maxclients_handler(request_rec *r)
             if (strcmp(client_ip, ws_record->client) == 0) {
               ip_count++;
               if (ip_count > scfg->vhost_maxclients_per_ip) {
-                if (scfg->dryrun) {
+                if (scfg->dryrun > 0) {
                   ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf, "NOTICE: [DRY-RUN] [CLIENT_COUNT] return "
                                                                             "503 from %s : %d / %d client_ip: %s uri: "
                                                                             "%s filename: %s",
@@ -204,7 +222,7 @@ static int vhost_maxclients_handler(request_rec *r)
                                "NOTICE: [CLIENT_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
                                vhostport, ip_count, scfg->vhost_maxclients_per_ip, client_ip, r->uri, r->filename);
                 }
-                return (scfg->dryrun) ? DECLINED : HTTP_SERVICE_UNAVAILABLE;
+                return (scfg->dryrun > 0) ? DECLINED : HTTP_SERVICE_UNAVAILABLE;
               }
             }
           }
@@ -312,6 +330,6 @@ module AP_MODULE_DECLARE_DATA vhost_maxclients_module = {
     NULL,                                  /* merge  per-dir    config structures  */
     vhost_maxclients_create_server_config, /* create per-server config
                                               structures  */
-    NULL,                                  /* merge  per-server config structures  */
+    vhost_maxclients_create_server_merge_conf,                                  /* merge  per-server config structures  */
     vhost_maxclients_cmds,                 /* table of config file commands        */
     vhost_maxclients_register_hooks};
