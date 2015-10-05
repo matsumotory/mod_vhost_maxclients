@@ -34,11 +34,11 @@ clean:
 
 #   the general Apache start/restart/stop procedures
 start:
-	$(APACHECTL) -k start
+	$(APACHECTL) start
 restart:
-	$(APACHECTL) -k restart
+	$(APACHECTL) restart
 stop:
-	$(APACHECTL) -k stop
+	$(APACHECTL) stop
 
 test:
 	git clone --recursive https://github.com/matsumoto-r/ab-mruby.git
