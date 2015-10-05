@@ -8,7 +8,7 @@ TARGET=mod_vhost_maxclients.c
 
 #   the used tools
 APXS=apxs
-APACHECTL=apachectl -k
+APACHECTL=apachectl
 
 #   additional user defines, includes and libraries
 DEF=
@@ -45,5 +45,9 @@ test:
 	cd ab-mruby && make
 	cd ab-mruby && ./ab-mruby -m ../test/check1.rb -M ../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
 	cd ab-mruby && ./ab-mruby -m ../test/check.rb -M ../test/test.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
+
+test2:
+	cd ab-mruby && ./ab-mruby -m ../test/check.rb -M ../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
+
 
 .PHONY: test

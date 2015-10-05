@@ -142,6 +142,17 @@ before_script:
   - sudo cat $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
   - curl -v -H "Host:test001.example.local" http://127.0.0.1:8080/cgi-bin/sleep.cgi
 script:
+  # test1
   - make test
+  # test2
+  - sudo echo "VhostMaxClientsDryRun On" >> $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
+  - sudo cat $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
+  - sudo make APXS=../${HTTPD_VERSION}/apache/bin/apxs APACHECTL=../${HTTPD_VERSION}/apache/bin/apachectl stop
+  - sleep 4
+  - ps auwx | grep httpd
+  - sudo make APXS=../${HTTPD_VERSION}/apache/bin/apxs APACHECTL=../${HTTPD_VERSION}/apache/bin/apachectl start
+  - sleep 4
+  - ps auwx | grep httpd
+  - make test2
   # debug
   - sudo cat $(../${HTTPD_VERSION}/apache/bin/apxs -q exp_logfiledir)/error_log

@@ -34,9 +34,12 @@ include /path/to/vhost.conf
     VhostMaxClients 30
     # Ignore extensions from VhostMaxClients for a performance issue
     # IgnoreVhostMaxClientsExt .html .js .css
-    
+
     # MaxClinets per client ip-address to the same vhost
     # VhostMaxClientsPerIP 5
+
+    # dry-run option which don't return 503, logging only
+    # VhostMaxClientsDryRun On
 
 </VirtualHost>
 ```
