@@ -147,8 +147,12 @@ script:
   # test2
   - sudo echo "VhostMaxClientsDryRun On" >> $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
   - sudo cat $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
-  - sudo killall httpd
+  - sudo make APXS=../${HTTPD_VERSION}/apache/bin/apxs APACHECTL=../${HTTPD_VERSION}/apache/bin/apachectl stop
+  - sleep 4
+  - ps auwx | grep httpd
   - sudo make APXS=../${HTTPD_VERSION}/apache/bin/apxs APACHECTL=../${HTTPD_VERSION}/apache/bin/apachectl start
+  - sleep 4
+  - ps auwx | grep httpd
   - make test2
   # debug
   - sudo cat $(../${HTTPD_VERSION}/apache/bin/apxs -q exp_logfiledir)/error_log
