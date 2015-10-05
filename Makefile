@@ -8,7 +8,7 @@ TARGET=mod_vhost_maxclients.c
 
 #   the used tools
 APXS=apxs
-APACHECTL=apachectl -k
+APACHECTL=apachectl
 
 #   additional user defines, includes and libraries
 DEF=
@@ -34,11 +34,11 @@ clean:
 
 #   the general Apache start/restart/stop procedures
 start:
-	$(APACHECTL) start
+	$(APACHECTL) -k start
 restart:
-	$(APACHECTL) restart
+	$(APACHECTL) -k restart
 stop:
-	$(APACHECTL) stop
+	$(APACHECTL) -k stop
 
 test:
 	git clone --recursive https://github.com/matsumoto-r/ab-mruby.git
