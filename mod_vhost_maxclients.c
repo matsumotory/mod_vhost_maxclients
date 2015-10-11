@@ -304,8 +304,18 @@ static command_rec vhost_maxclients_cmds[] = {
     {NULL},
 };
 
-static int vhost_maxclients_init(apr_pool_t *p, apr_pool_t *plog, apr_pool_t *ptemp, server_rec *s)
+static int vhost_maxclients_init(apr_pool_t *p, apr_pool_t *plog, apr_pool_t *ptemp, server_rec *server)
 {
+  void *data;
+  const char *userdata_key = "vhost_maxclients_init";
+
+  apr_pool_userdata_get(&data, userdata_key, server->process->pool);
+
+  if (!data) {
+    apr_pool_userdata_set((const void *)1, userdata_key, apr_pool_cleanup_null, server->process->pool);
+    return OK;
+  }
+
   ap_mpm_query(AP_MPMQ_HARD_LIMIT_THREADS, &vhost_maxclients_thread_limit);
   ap_mpm_query(AP_MPMQ_HARD_LIMIT_DAEMONS, &vhost_maxclients_server_limit);
   ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
