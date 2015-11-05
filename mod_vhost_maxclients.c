@@ -216,7 +216,7 @@ static int vhost_maxclients_handler(request_rec *r)
           /* logging only for vhost_maxclients_log */
           if (scfg->vhost_maxclients_log > 0 && vhost_count > scfg->vhost_maxclients_log) {
             if (vhost_maxclients_log_fp != NULL) {
-              vhost_maxclinets_log_error(r, apr_psprintf(r->pool, "NOTICE: [LOG-ONLY] [VHOST_COUNT] return 503 from %s "
+              vhost_maxclinets_log_error(r, apr_psprintf(r->pool, "[LOG-ONLY] [VHOST_COUNT] return 503 from %s "
                                                                   ": %d / %d client_ip: %s uri: %s filename: %s",
                                                          vhostport, vhost_count, scfg->vhost_maxclients_log, client_ip,
                                                          r->uri, r->filename));
@@ -230,7 +230,7 @@ static int vhost_maxclients_handler(request_rec *r)
           if (vhost_count > scfg->vhost_maxclients) {
             if (scfg->dryrun > 0) {
               if (vhost_maxclients_log_fp != NULL) {
-                vhost_maxclinets_log_error(r, apr_psprintf(r->pool, "NOTICE: [DRY-RUN] [VHOST_COUNT] return 503 from "
+                vhost_maxclinets_log_error(r, apr_psprintf(r->pool, "[DRY-RUN] [VHOST_COUNT] return 503 from "
                                                                     "%s : %d / %d client_ip: %s uri: %s filename: %s",
                                                            vhostport, vhost_count, scfg->vhost_maxclients, client_ip,
                                                            r->uri, r->filename));
@@ -245,7 +245,7 @@ static int vhost_maxclients_handler(request_rec *r)
                 vhost_maxclinets_log_error(
                     r, apr_psprintf(
                            r->pool,
-                           "NOTICE: [VHOST_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
+                           "[VHOST_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
                            vhostport, vhost_count, scfg->vhost_maxclients, client_ip, r->uri, r->filename));
               } else {
                 ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
@@ -264,7 +264,7 @@ static int vhost_maxclients_handler(request_rec *r)
                 if (scfg->dryrun > 0) {
                   if (vhost_maxclients_log_fp != NULL) {
                     vhost_maxclinets_log_error(r,
-                                               apr_psprintf(r->pool, "NOTICE: [DRY-RUN] [CLIENT_COUNT] return 503 from "
+                                               apr_psprintf(r->pool, "[DRY-RUN] [CLIENT_COUNT] return 503 from "
                                                                      "%s : %d / %d client_ip: %s uri: %s filename: %s",
                                                             vhostport, ip_count, scfg->vhost_maxclients_per_ip,
                                                             client_ip, r->uri, r->filename));
@@ -279,7 +279,7 @@ static int vhost_maxclients_handler(request_rec *r)
                     vhost_maxclinets_log_error(
                         r, apr_psprintf(
                                r->pool,
-                               "NOTICE: [CLIENT_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
+                               "[CLIENT_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
                                vhostport, ip_count, scfg->vhost_maxclients_per_ip, client_ip, r->uri, r->filename));
                   } else {
                     ap_log_error(
