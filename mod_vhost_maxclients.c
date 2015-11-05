@@ -74,6 +74,7 @@ typedef struct {
   /* vhost max clinetns */
   int dryrun;
   signed int vhost_maxclients;
+  signed int vhost_maxclients_log;
   signed int vhost_maxclients_per_ip;
   apr_array_header_t *ignore_extensions;
 
@@ -85,6 +86,7 @@ static void *vhost_maxclients_create_server_config(apr_pool_t *p, server_rec *s)
 
   scfg->dryrun = -1;
   scfg->vhost_maxclients = 0;
+  scfg->vhost_maxclients_log = 0;
   scfg->vhost_maxclients_per_ip = 0;
   scfg->ignore_extensions = apr_array_make(p, VHOST_MAXEXTENSIONS, sizeof(char *));
 
@@ -103,6 +105,7 @@ static void* vhost_maxclients_create_server_merge_conf(apr_pool_t* p, void* b, v
       scfg->dryrun = base->dryrun;
   }
   scfg->vhost_maxclients = new->vhost_maxclients;
+  scfg->vhost_maxclients_log = new->vhost_maxclients_log;
   scfg->vhost_maxclients_per_ip = new->vhost_maxclients_per_ip;
   scfg->ignore_extensions = new->ignore_extensions;
 
@@ -193,6 +196,13 @@ static int vhost_maxclients_handler(request_rec *r)
           vhost_count++;
           ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "DEBUG: (increment %s): %d/%d", vhostport,
                        vhost_count, scfg->vhost_maxclients);
+          /* logging only for vhost_maxclients_log */
+          if (vhost_count > scfg->vhost_maxclients_log) {
+              ap_log_error(
+                  APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
+                  "NOTICE: [LOG-ONLY] [VHOST_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
+                  vhostport, vhost_count, scfg->vhost_maxclients_log, client_ip, r->uri, r->filename);
+          }
           if (vhost_count > scfg->vhost_maxclients) {
             if (scfg->dryrun > 0) {
               ap_log_error(
@@ -263,6 +273,21 @@ static const char *set_vhost_maxclientsvhost(cmd_parms *parms, void *mconfig, co
   return NULL;
 }
 
+static const char *set_vhost_maxclientsvhost_log(cmd_parms *parms, void *mconfig, const char *arg1)
+{
+  vhost_maxclients_config *scfg =
+      (vhost_maxclients_config *)ap_get_module_config(parms->server->module_config, &vhost_maxclients_module);
+  signed long int limit = strtol(arg1, (char **)NULL, 10);
+
+  if ((limit > 65535) || (limit < 0)) {
+    return "Integer overflow or invalid number";
+  }
+
+  scfg->vhost_maxclients_log = limit;
+
+  return NULL;
+}
+
 static const char *set_vhost_maxclientsvhost_perip(cmd_parms *parms, void *mconfig, const char *arg1)
 {
   vhost_maxclients_config *scfg =
@@ -297,6 +322,8 @@ static command_rec vhost_maxclients_cmds[] = {
                  "Enable dry-run which don't return 503, logging only: On / Off (default Off)"),
     AP_INIT_TAKE1("VhostMaxClients", set_vhost_maxclientsvhost, NULL, RSRC_CONF | ACCESS_CONF,
                   "maximum connections per Vhost"),
+    AP_INIT_TAKE1("VhostMaxClientsLogOnly", set_vhost_maxclientsvhost_log, NULL, RSRC_CONF | ACCESS_CONF,
+                  "loggign only: maximum connections per Vhost"),
     AP_INIT_TAKE1("VhostMaxClientsPerIP", set_vhost_maxclientsvhost_perip, NULL, RSRC_CONF | ACCESS_CONF,
                   "maximum connections per IP of Vhost"),
     AP_INIT_ITERATE("IgnoreVhostMaxClientsExt", set_vhost_ignore_extensions, NULL, ACCESS_CONF | RSRC_CONF,
