@@ -197,7 +197,7 @@ static int vhost_maxclients_handler(request_rec *r)
           ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "DEBUG: (increment %s): %d/%d", vhostport,
                        vhost_count, scfg->vhost_maxclients);
           /* logging only for vhost_maxclients_log */
-          if (vhost_count > scfg->vhost_maxclients_log) {
+          if (scfg->vhost_maxclients_log > 0 && vhost_count > scfg->vhost_maxclients_log) {
               ap_log_error(
                   APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
                   "NOTICE: [LOG-ONLY] [VHOST_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
