@@ -41,6 +41,10 @@ include /path/to/vhost.conf
     # dry-run option which don't return 503, logging only
     # VhostMaxClientsDryRun On
 
+    # logging only option which don't return 503, logging only
+    # VhostMaxClientsLogOnly 10
+
+
 </VirtualHost>
 ```
 
