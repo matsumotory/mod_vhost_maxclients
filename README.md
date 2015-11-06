@@ -6,6 +6,8 @@ It supports Apache httpd __2.2.x and 2.4.x__, and __worker, prefork and event mp
 
 If you have a performance issue using mod_vhost_maxclients like over-head of serving static contents, You should use `IgnoreVhostMaxClientsExt` for ignoring the static contents.
 
+Notice: vhost length in scoreboard is 32 bytes. it's versy short. If you control more length of vhost name by mod_vhost_maxclients, you should apply a patch like [example for httpd 2.4.x](https://gist.github.com/matsumoto-r/1ef9b14ac5908ebfb4f1).
+
 # Quick Install
 - build
 
