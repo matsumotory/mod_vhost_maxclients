@@ -420,12 +420,14 @@ static int vhost_maxclients_init(apr_pool_t *p, apr_pool_t *plog, apr_pool_t *pt
                vhost_maxclients_thread_limit, vhost_maxclients_server_limit);
 
   /* open custom log instead of error_log */
-  if (apr_file_open(&vhost_maxclients_log_fp, scfg->log_path, APR_WRITE | APR_APPEND | APR_CREATE, APR_OS_DEFAULT, p) !=
-      APR_SUCCESS) {
-    ap_log_error(APLOG_MARK, APLOG_ERR, 0, NULL, "%s ERROR %s: vhost_maxclients log file oepn failed: %s", MODULE_NAME,
-                 __func__, scfg->log_path);
+  if (scfg->log_path != NULL) {
+    if (apr_file_open(&vhost_maxclients_log_fp, scfg->log_path, APR_WRITE | APR_APPEND | APR_CREATE, APR_OS_DEFAULT, p) !=
+        APR_SUCCESS) {
+      ap_log_error(APLOG_MARK, APLOG_EMERG, 0, server, "%s ERROR %s: vhost_maxclients log file oepn failed: %s", MODULE_NAME,
+                   __func__, scfg->log_path);
 
-    return HTTP_INTERNAL_SERVER_ERROR;
+      return HTTP_INTERNAL_SERVER_ERROR;
+    }
   }
 
   return OK;
