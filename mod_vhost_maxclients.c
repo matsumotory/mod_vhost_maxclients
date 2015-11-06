@@ -31,7 +31,7 @@
 #include "http_protocol.h"
 #include "http_core.h"
 #include "http_log.h"
-#include "util_time.h"                                                                                                   
+#include "util_time.h"
 
 #include "ap_mpm.h"
 #include "apr_strings.h"
@@ -243,10 +243,9 @@ static int vhost_maxclients_handler(request_rec *r)
             } else {
               if (vhost_maxclients_log_fp != NULL) {
                 vhost_maxclinets_log_error(
-                    r, apr_psprintf(
-                           r->pool,
-                           "[VHOST_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
-                           vhostport, vhost_count, scfg->vhost_maxclients, client_ip, r->uri, r->filename));
+                    r, apr_psprintf(r->pool,
+                                    "[VHOST_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
+                                    vhostport, vhost_count, scfg->vhost_maxclients, client_ip, r->uri, r->filename));
               } else {
                 ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
                              "NOTICE: [VHOST_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
@@ -277,10 +276,10 @@ static int vhost_maxclients_handler(request_rec *r)
                 } else {
                   if (vhost_maxclients_log_fp != NULL) {
                     vhost_maxclinets_log_error(
-                        r, apr_psprintf(
-                               r->pool,
-                               "[CLIENT_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
-                               vhostport, ip_count, scfg->vhost_maxclients_per_ip, client_ip, r->uri, r->filename));
+                        r,
+                        apr_psprintf(
+                            r->pool, "[CLIENT_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
+                            vhostport, ip_count, scfg->vhost_maxclients_per_ip, client_ip, r->uri, r->filename));
                   } else {
                     ap_log_error(
                         APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
@@ -421,10 +420,10 @@ static int vhost_maxclients_init(apr_pool_t *p, apr_pool_t *plog, apr_pool_t *pt
 
   /* open custom log instead of error_log */
   if (scfg->log_path != NULL) {
-    if (apr_file_open(&vhost_maxclients_log_fp, scfg->log_path, APR_WRITE | APR_APPEND | APR_CREATE, APR_OS_DEFAULT, p) !=
-        APR_SUCCESS) {
-      ap_log_error(APLOG_MARK, APLOG_EMERG, 0, server, "%s ERROR %s: vhost_maxclients log file oepn failed: %s", MODULE_NAME,
-                   __func__, scfg->log_path);
+    if (apr_file_open(&vhost_maxclients_log_fp, scfg->log_path, APR_WRITE | APR_APPEND | APR_CREATE, APR_OS_DEFAULT,
+                      p) != APR_SUCCESS) {
+      ap_log_error(APLOG_MARK, APLOG_EMERG, 0, server, "%s ERROR %s: vhost_maxclients log file oepn failed: %s",
+                   MODULE_NAME, __func__, scfg->log_path);
 
       return HTTP_INTERNAL_SERVER_ERROR;
     }
