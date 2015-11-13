@@ -38,7 +38,7 @@
 #include "scoreboard.h"
 
 #define MODULE_NAME "mod_vhost_maxclients"
-#define MODULE_VERSION "0.5.0"
+#define MODULE_VERSION "0.5.1"
 
 #if (AP_SERVER_MINORVERSION_NUMBER > 2)
 #define __APACHE24__
