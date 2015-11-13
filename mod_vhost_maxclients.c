@@ -58,6 +58,7 @@
 #endif
 
 #define VHOST_MAXEXTENSIONS 16
+#define AP_CTIME_COMPACT_LEN 20
 
 #if !defined(__APACHE24__) && defined(_WIN32)
 /*
@@ -87,10 +88,13 @@ typedef struct {
 
 static void *_vhost_maxclinets_log_error(request_rec *r, char *log_body)
 {
-  char log_time[APR_CTIME_LEN];
+  char log_time[AP_CTIME_COMPACT_LEN];
   char *log;
+  int time_len = AP_CTIME_COMPACT_LEN;
 
-  ap_recent_ctime(log_time, r->request_time);
+  /* example for compact format: "1993-06-30 21:49:08" */
+  /*                              1234567890123456789  */
+  ap_recent_ctime_ex(log_time, r->request_time, AP_CTIME_OPTION_COMPACT, &time_len);
   log = apr_psprintf(r->pool, "%s %s\n", log_time, log_body);
 
   apr_file_puts(log, vhost_maxclients_log_fp);
