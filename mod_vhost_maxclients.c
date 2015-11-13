@@ -58,6 +58,7 @@
 #endif
 
 #define VHOST_MAXEXTENSIONS 16
+#define AP_CTIME_COMPACT_LEN 20
 
 #if !defined(__APACHE24__) && defined(_WIN32)
 /*
@@ -83,14 +84,57 @@ typedef struct {
 
 } vhost_maxclients_config;
 
+#ifndef __APACHE24__
+static apr_status_t ap_recent_ctime_compact(char *date_str, apr_time_t t)
+{
+  apr_time_exp_t xt;
+  int real_year;
+  int real_month;
+
+  ap_explode_recent_localtime(&xt, t);
+  real_year = 1900 + xt.tm_year;
+  real_month = xt.tm_mon + 1;
+
+  *date_str++ = real_year / 1000 + '0';
+  *date_str++ = real_year % 1000 / 100 + '0';
+  *date_str++ = real_year % 100 / 10 + '0';
+  *date_str++ = real_year % 10 + '0';
+  *date_str++ = '-';
+  *date_str++ = real_month / 10 + '0';
+  *date_str++ = real_month % 10 + '0';
+  *date_str++ = '-';
+  *date_str++ = xt.tm_mday / 10 + '0';
+  *date_str++ = xt.tm_mday % 10 + '0';
+  *date_str++ = ' ';
+  *date_str++ = xt.tm_hour / 10 + '0';
+  *date_str++ = xt.tm_hour % 10 + '0';
+  *date_str++ = ':';
+  *date_str++ = xt.tm_min / 10 + '0';
+  *date_str++ = xt.tm_min % 10 + '0';
+  *date_str++ = ':';
+  *date_str++ = xt.tm_sec / 10 + '0';
+  *date_str++ = xt.tm_sec % 10 + '0';
+  *date_str++ = 0;
+
+  return APR_SUCCESS;
+}
+#endif
+
 #define vhost_maxclinets_log_error(r, fmt, ...) _vhost_maxclinets_log_error(r, apr_psprintf(r->pool, fmt, __VA_ARGS__))
 
 static void *_vhost_maxclinets_log_error(request_rec *r, char *log_body)
 {
-  char log_time[APR_CTIME_LEN];
+  char log_time[AP_CTIME_COMPACT_LEN];
   char *log;
 
-  ap_recent_ctime(log_time, r->request_time);
+/* example for compact format: "1993-06-30 21:49:08" */
+/*                              1234567890123456789  */
+#ifdef __APACHE24__
+  int time_len = AP_CTIME_COMPACT_LEN;
+  ap_recent_ctime_ex(log_time, r->request_time, AP_CTIME_OPTION_COMPACT, &time_len);
+#else
+  ap_recent_ctime_compact(log_time, r->request_time);
+#endif
   log = apr_psprintf(r->pool, "%s %s\n", log_time, log_body);
 
   apr_file_puts(log, vhost_maxclients_log_fp);
@@ -219,12 +263,12 @@ static int vhost_maxclients_handler(request_rec *r)
           if (scfg->vhost_maxclients_log > 0 && vhost_count > scfg->vhost_maxclients_log) {
             if (vhost_maxclients_log_fp != NULL) {
               vhost_maxclinets_log_error(
-                  r, "[LOG-ONLY] [VHOST_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
-                  vhostport, vhost_count, scfg->vhost_maxclients_log, client_ip, r->uri, r->filename);
+                  r, "LOG-ONLY-VHOST_COUNT return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s", vhostport,
+                  vhost_count, scfg->vhost_maxclients_log, client_ip, r->uri, r->filename);
             } else {
               ap_log_error(
                   APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
-                  "NOTICE: [LOG-ONLY] [VHOST_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
+                  "NOTICE: LOG-ONLY-VHOST_COUNT return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
                   vhostport, vhost_count, scfg->vhost_maxclients_log, client_ip, r->uri, r->filename);
             }
           }
@@ -232,23 +276,22 @@ static int vhost_maxclients_handler(request_rec *r)
             if (scfg->dryrun > 0) {
               if (vhost_maxclients_log_fp != NULL) {
                 vhost_maxclinets_log_error(
-                    r, "[DRY-RUN] [VHOST_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
-                    vhostport, vhost_count, scfg->vhost_maxclients, client_ip, r->uri, r->filename);
+                    r, "DRY-RUN-VHOST_COUNT return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s", vhostport,
+                    vhost_count, scfg->vhost_maxclients, client_ip, r->uri, r->filename);
               } else {
-                ap_log_error(
-                    APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
-                    "NOTICE: [DRY-RUN] [VHOST_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
-                    vhostport, vhost_count, scfg->vhost_maxclients, client_ip, r->uri, r->filename);
+                ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
+                             "DRY-RUN-VHOST_COUNT return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
+                             vhostport, vhost_count, scfg->vhost_maxclients, client_ip, r->uri, r->filename);
               }
             } else {
               if (vhost_maxclients_log_fp != NULL) {
                 vhost_maxclinets_log_error(
-                    r, "[VHOST_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s", vhostport,
+                    r, "VHOST_COUNT return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s", vhostport,
                     vhost_count, scfg->vhost_maxclients, client_ip, r->uri, r->filename);
               } else {
                 ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
-                             "NOTICE: [VHOST_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
-                             vhostport, vhost_count, scfg->vhost_maxclients, client_ip, r->uri, r->filename);
+                             "VHOST_COUNT return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s", vhostport,
+                             vhost_count, scfg->vhost_maxclients, client_ip, r->uri, r->filename);
               }
             }
             return (scfg->dryrun > 0) ? DECLINED : HTTP_SERVICE_UNAVAILABLE;
@@ -262,10 +305,10 @@ static int vhost_maxclients_handler(request_rec *r)
                 if (scfg->dryrun > 0) {
                   if (vhost_maxclients_log_fp != NULL) {
                     vhost_maxclinets_log_error(
-                        r, "[DRY-RUN] [CLIENT_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
+                        r, "DRY-RUN-CLIENT_COUNT return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
                         vhostport, ip_count, scfg->vhost_maxclients_per_ip, client_ip, r->uri, r->filename);
                   } else {
-                    ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf, "NOTICE: [DRY-RUN] [CLIENT_COUNT] return "
+                    ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf, "NOTICE: DRY-RUN-CLIENT_COUNT return "
                                                                               "503 from %s : %d / %d client_ip: %s "
                                                                               "uri: %s filename: %s",
                                  vhostport, ip_count, scfg->vhost_maxclients_per_ip, client_ip, r->uri, r->filename);
@@ -273,13 +316,12 @@ static int vhost_maxclients_handler(request_rec *r)
                 } else {
                   if (vhost_maxclients_log_fp != NULL) {
                     vhost_maxclinets_log_error(
-                        r, "[CLIENT_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s", vhostport,
+                        r, "CLIENT_COUNT return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s", vhostport,
                         ip_count, scfg->vhost_maxclients_per_ip, client_ip, r->uri, r->filename);
                   } else {
-                    ap_log_error(
-                        APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
-                        "NOTICE: [CLIENT_COUNT] return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
-                        vhostport, ip_count, scfg->vhost_maxclients_per_ip, client_ip, r->uri, r->filename);
+                    ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
+                                 "CLIENT_COUNT return 503 from %s : %d / %d client_ip: %s uri: %s filename: %s",
+                                 vhostport, ip_count, scfg->vhost_maxclients_per_ip, client_ip, r->uri, r->filename);
                   }
                 }
                 return (scfg->dryrun > 0) ? DECLINED : HTTP_SERVICE_UNAVAILABLE;
