@@ -84,17 +84,57 @@ typedef struct {
 
 } vhost_maxclients_config;
 
+#ifndef __APACHE24__
+static apr_status_t ap_recent_ctime_compact(char *date_str, apr_time_t t)
+{
+  apr_time_exp_t xt;
+  int real_year;
+  int real_month;
+
+  ap_explode_recent_localtime(&xt, t);
+  real_year = 1900 + xt.tm_year;
+  real_month = xt.tm_mon + 1;
+
+  *date_str++ = real_year / 1000 + '0';
+  *date_str++ = real_year % 1000 / 100 + '0';
+  *date_str++ = real_year % 100 / 10 + '0';
+  *date_str++ = real_year % 10 + '0';
+  *date_str++ = '-';
+  *date_str++ = real_month / 10 + '0';
+  *date_str++ = real_month % 10 + '0';
+  *date_str++ = '-';
+  *date_str++ = xt.tm_mday / 10 + '0';
+  *date_str++ = xt.tm_mday % 10 + '0';
+  *date_str++ = ' ';
+  *date_str++ = xt.tm_hour / 10 + '0';
+  *date_str++ = xt.tm_hour % 10 + '0';
+  *date_str++ = ':';
+  *date_str++ = xt.tm_min / 10 + '0';
+  *date_str++ = xt.tm_min % 10 + '0';
+  *date_str++ = ':';
+  *date_str++ = xt.tm_sec / 10 + '0';
+  *date_str++ = xt.tm_sec % 10 + '0';
+  *date_str++ = 0;
+
+  return APR_SUCCESS;
+}
+#endif
+
 #define vhost_maxclinets_log_error(r, fmt, ...) _vhost_maxclinets_log_error(r, apr_psprintf(r->pool, fmt, __VA_ARGS__))
 
 static void *_vhost_maxclinets_log_error(request_rec *r, char *log_body)
 {
   char log_time[AP_CTIME_COMPACT_LEN];
   char *log;
-  int time_len = AP_CTIME_COMPACT_LEN;
 
-  /* example for compact format: "1993-06-30 21:49:08" */
-  /*                              1234567890123456789  */
+/* example for compact format: "1993-06-30 21:49:08" */
+/*                              1234567890123456789  */
+#ifdef __APACHE24__
+  int time_len = AP_CTIME_COMPACT_LEN;
   ap_recent_ctime_ex(log_time, r->request_time, AP_CTIME_OPTION_COMPACT, &time_len);
+#else
+  ap_recent_ctime_compact(log_time, r->request_time);
+#endif
   log = apr_psprintf(r->pool, "%s %s\n", log_time, log_body);
 
   apr_file_puts(log, vhost_maxclients_log_fp);
