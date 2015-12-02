@@ -28,6 +28,9 @@ include /path/to/vhost.conf
 - /path/to/vhost.conf
 
 ```apache
+# separate vhost maxclients
+# VhostMaxClientsLogPath /usr/local/apache/logs/vhost_maxclients.log
+
 <VirtualHost *>
     DocumentRoot /path/to/web
     ServerName test001.example.jp
