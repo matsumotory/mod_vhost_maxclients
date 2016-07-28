@@ -266,6 +266,7 @@ static int vhost_maxclients_handler(request_rec *r)
 
   /* check time range */
   if (check_time_range(r->pool, scfg->vhost_maxclients_time_start, scfg->vhost_maxclients_time_end)) {
+    /* ingnore in this time range */
     return DECLINED;
   }
 
