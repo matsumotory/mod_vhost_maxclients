@@ -193,6 +193,25 @@ static int check_extension(char *filename, apr_array_header_t *exts)
   return 0;
 }
 
+static int check_time(apr_pool_t *p, unsigned int time_from, unsigned int time_to)
+{
+  apr_time_exp_t reqtime_result;
+  apr_time_exp_lt(&reqtime_result, apr_time_now());
+
+  unsigned int cur_hourmin;
+  cur_hourmin = atoi(apr_psprintf(p, "%02d%02d", reqtime_result.tm_hour, reqtime_result.tm_min));
+
+  if (time_from > time_to){
+    time_to += 2400;
+  }
+
+  if ((time_from < cur_hourmin) && (time_to > cur_hourmin)){
+    return 0;
+  }
+
+  return 1;
+}
+
 static char *build_vhostport_name(request_rec *r)
 {
 #ifdef __APACHE24__
@@ -240,19 +259,8 @@ static int vhost_maxclients_handler(request_rec *r)
     return DECLINED;
   }
 
-  apr_time_exp_t reqtime_result;
-  apr_time_exp_lt(&reqtime_result, apr_time_now());
-
-  unsigned int cur_hourmin;
-  cur_hourmin = atoi(apr_psprintf(r->pool, "%02d%02d", reqtime_result.tm_hour, reqtime_result.tm_min));
-
-  vhost_maxclients_log_error(r, "%d %d %d", scfg->vhost_maxclients_time_from, scfg->vhost_maxclients_time_to, cur_hourmin);
-
-  if (scfg->vhost_maxclients_time_from > scfg->vhost_maxclients_time_to){
-    scfg->vhost_maxclients_time_to += 2400;
-  }
-
-  if (!((scfg->vhost_maxclients_time_from < cur_hourmin) && (scfg->vhost_maxclients_time_to > cur_hourmin))){
+  /* check time */
+  if (check_time(r->pool, scfg->vhost_maxclients_time_from, scfg->vhost_maxclients_time_to)) {
     return DECLINED;
   }
 
@@ -451,7 +459,9 @@ static const char *set_vhost_maxclients_time(cmd_parms *parms, void *mconfig, co
 
   if(scfg->vhost_maxclients_time_from < 0 || scfg->vhost_maxclients_time_from > 2359){
     return "the limit time from invalid number";
-  } else if (scfg->vhost_maxclients_time_to < 0 || scfg->vhost_maxclients_time_to > 2359){
+  }
+
+  if (scfg->vhost_maxclients_time_to < 0 || scfg->vhost_maxclients_time_to > 2359){
     return "the limit time to invalid number";
   }
 
