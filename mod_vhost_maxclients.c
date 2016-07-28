@@ -25,12 +25,12 @@
 ** [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 */
 
-#include "httpd.h"
 #include "http_config.h"
-#include "http_request.h"
-#include "http_protocol.h"
 #include "http_core.h"
 #include "http_log.h"
+#include "http_protocol.h"
+#include "http_request.h"
+#include "httpd.h"
 #include "util_time.h"
 
 #include "ap_mpm.h"
@@ -80,8 +80,8 @@ typedef struct {
   signed int vhost_maxclients;
   signed int vhost_maxclients_log;
   signed int vhost_maxclients_per_ip;
-  unsigned int vhost_maxclients_time_start; 
-  unsigned int vhost_maxclients_time_end; 
+  unsigned int vhost_maxclients_time_start;
+  unsigned int vhost_maxclients_time_end;
   apr_array_header_t *ignore_extensions;
 
 } vhost_maxclients_config;
@@ -210,7 +210,8 @@ static unsigned int check_time_range(apr_pool_t *p, unsigned int start, unsigned
     end = end + 2400;
   }
   if ((start < now) && (now < end)) {
-    ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf, "%s: %04d < %04d < %04d: In this time, target reuqest by vhost_maxclients", __func__, start, now, end);
+    ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, ap_server_conf,
+                 "%s: %04d < %04d < %04d: In this time, target reuqest by vhost_maxclients", __func__, start, now, end);
     return 0;
   }
   return 1;
@@ -439,7 +440,8 @@ static const char *set_vhost_maxclientsvhost_perip(cmd_parms *parms, void *mconf
   return NULL;
 }
 
-static const char *set_vhost_maxclientsvhost_time_range(cmd_parms *parms, void *mconfig, const char *start, const char *end)
+static const char *set_vhost_maxclientsvhost_time_range(cmd_parms *parms, void *mconfig, const char *start,
+                                                        const char *end)
 {
   vhost_maxclients_config *scfg =
       (vhost_maxclients_config *)ap_get_module_config(parms->server->module_config, &vhost_maxclients_module);
