@@ -81,8 +81,8 @@ typedef struct {
   signed int vhost_maxclients_log;
   signed int vhost_maxclients_per_ip;
   apr_array_header_t *ignore_extensions;
-  const char *vhost_maxclients_time_from;
-  const char *vhost_maxclients_time_to;
+  unsigned int vhost_maxclients_time_from;
+  unsigned int vhost_maxclients_time_to;
 
 } vhost_maxclients_config;
 
@@ -153,8 +153,8 @@ static void *vhost_maxclients_create_server_config(apr_pool_t *p, server_rec *s)
   scfg->vhost_maxclients_log = 0;
   scfg->vhost_maxclients_per_ip = 0;
   scfg->ignore_extensions = apr_array_make(p, VHOST_MAXEXTENSIONS, sizeof(char *));
-  scfg->vhost_maxclients_time_from = "0000";
-  scfg->vhost_maxclients_time_to = "2359";
+  scfg->vhost_maxclients_time_from = 0;
+  scfg->vhost_maxclients_time_to = 2359;
 
   return scfg;
 }
@@ -241,14 +241,19 @@ static int vhost_maxclients_handler(request_rec *r)
   }
 
   apr_time_exp_t reqtime_result;
-  apr_time_exp_lt(&reqtime_result, r->request_time);
-  char reqtime[5];
-  sprintf(reqtime,"%02d%02d",reqtime_result.tm_hour,reqtime_result.tm_min);
+  apr_time_exp_lt(&reqtime_result, apr_time_now());
 
-  if(atoi(scfg->vhost_maxclients_time_from) > atoi(scfg->vhost_maxclients_time_to)){
+  unsigned int cur_hourmin;
+  cur_hourmin = atoi(apr_psprintf(r->pool, "%02d%02d", reqtime_result.tm_hour, reqtime_result.tm_min));
 
+  vhost_maxclients_log_error(r, "%d %d %d", scfg->vhost_maxclients_time_from, scfg->vhost_maxclients_time_to, cur_hourmin);
 
+  if (scfg->vhost_maxclients_time_from > scfg->vhost_maxclients_time_to){
+    scfg->vhost_maxclients_time_to += 2400;
+  }
 
+  if (!((scfg->vhost_maxclients_time_from < cur_hourmin) && (scfg->vhost_maxclients_time_to > cur_hourmin))){
+    return DECLINED;
   }
 
   /* build vhostport name */
@@ -436,22 +441,19 @@ static const char *set_vhost_ignore_extensions(cmd_parms *parms, void *mconfig, 
   return NULL;
 }
 
-static const char *set_vhost_maxclients_timefrom(cmd_parms *parms, void *mconfig, const char *arg1)
+static const char *set_vhost_maxclients_time(cmd_parms *parms, void *mconfig, const char *arg1, const char *arg2)
 {
   vhost_maxclients_config *scfg =
       (vhost_maxclients_config *)ap_get_module_config(parms->server->module_config, &vhost_maxclients_module);
 
-  scfg->vhost_maxclients_time_from = arg1;
+  scfg->vhost_maxclients_time_from = atoi(arg1);
+  scfg->vhost_maxclients_time_to = atoi(arg2);
 
-  return NULL;
-}
-
-static const char *set_vhost_maxclients_timeto(cmd_parms *parms, void *mconfig, const char *arg1)
-{
-  vhost_maxclients_config *scfg =
-      (vhost_maxclients_config *)ap_get_module_config(parms->server->module_config, &vhost_maxclients_module);
-
-  scfg->vhost_maxclients_time_to = arg1;
+  if(scfg->vhost_maxclients_time_from < 0 || scfg->vhost_maxclients_time_from > 2359){
+    return "the limit time from invalid number";
+  } else if (scfg->vhost_maxclients_time_to < 0 || scfg->vhost_maxclients_time_to > 2359){
+    return "the limit time to invalid number";
+  }
 
   return NULL;
 }
@@ -469,10 +471,8 @@ static command_rec vhost_maxclients_cmds[] = {
                   "maximum connections per IP of Vhost"),
     AP_INIT_ITERATE("IgnoreVhostMaxClientsExt", set_vhost_ignore_extensions, NULL, ACCESS_CONF | RSRC_CONF,
                   "Set Ignore Extensions."),
-    AP_INIT_TAKE1("VhostMaxClientsTimeFrom", set_vhost_maxclients_timefrom, NULL, RSRC_CONF | ACCESS_CONF,
-                  "Set Limit From time."),
-    AP_INIT_TAKE1("VhostMaxClientsTimeTo", set_vhost_maxclients_timeto, NULL, RSRC_CONF | ACCESS_CONF,
-                  "Set Limit To time."),
+    AP_INIT_TAKE2("VhostMaxClientsTime", set_vhost_maxclients_time, NULL, RSRC_CONF | ACCESS_CONF,
+                  "Set Limit time."),
     {NULL},
 };
 
