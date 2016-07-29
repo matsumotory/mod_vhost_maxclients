@@ -82,7 +82,14 @@ test: build
 	cd build/ab-mruby && ./ab-mruby -m ../../test/check.rb -M ../../test/test.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
 	killall httpd
 
-test2:
+fixup_test2_conf:
+	echo "VhostMaxClientsDryRun On" >> `build/${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir`/`build/${HTTPD_VERSION}/apache/bin/apxs -q progname`.conf
+	make APXS=build/${HTTPD_VERSION}/apache/bin/apxs APACHECTL=build/${HTTPD_VERSION}/apache/bin/apachectl stop
+	sleep 1
+	make APXS=build/${HTTPD_VERSION}/apache/bin/apxs APACHECTL=build/${HTTPD_VERSION}/apache/bin/apachectl start
+	sleep 1
+
+test2: fixup_test2_conf
 	cd build/ab-mruby && ./ab-mruby -m ../../test/check.rb -M ../../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
 
 
