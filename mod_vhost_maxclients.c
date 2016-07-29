@@ -193,19 +193,19 @@ static int check_extension(char *filename, apr_array_header_t *exts)
   return 0;
 }
 
-static int check_time(apr_pool_t *p, unsigned int time_from, unsigned int time_to)
+static int check_time(apr_pool_t *p, unsigned int from, unsigned int to)
 {
-  apr_time_exp_t reqtime_result;
-  apr_time_exp_lt(&reqtime_result, apr_time_now());
+  apr_time_exp_t tm;
+  apr_time_exp_lt(&tm, apr_time_now());
 
-  unsigned int cur_hourmin;
-  cur_hourmin = atoi(apr_psprintf(p, "%02d%02d", reqtime_result.tm_hour, reqtime_result.tm_min));
+  unsigned int cur;
+  cur = atoi(apr_psprintf(p, "%02d%02d", tm.tm_hour, tm.tm_min));
 
-  if (time_from > time_to){
-    time_to += 2400;
+  if (from > to){
+    to += 2400;
   }
 
-  if ((time_from < cur_hourmin) && (time_to > cur_hourmin)){
+  if ((from < cur) && (to > cur)){
     return 0;
   }
 
