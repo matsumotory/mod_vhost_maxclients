@@ -64,7 +64,7 @@ build:
 	cd build/$(HTTPD_VERSION)/srclib && ln -sf $(APR) apr
 	cd build/$(HTTPD_VERSION)/srclib && ln -sf $(APR_UTIL) apr-util
 	cd build/$(HTTPD_VERSION) && test -e apache/bin/httpd || ./configure --prefix=`pwd`/apache --with-included-apr $(HTTPD_CONFIG_OPT)
-	cd build/$(HTTPD_VERSION) && test -e apache/bin/httpd || make
+	cd build/$(HTTPD_VERSION) && test -e apache/bin/httpd || make -j10
 	cd build/$(HTTPD_VERSION) && test -e apache/bin/httpd || make install
 	cd build && bash -c $(APXS_CHECK_CMD)
 	make APXS=build/$(HTTPD_VERSION)/apache/bin/apxs
@@ -76,13 +76,13 @@ build:
 	make APXS=build/$(HTTPD_VERSION)/apache/bin/apxs APACHECTL=build/$(HTTPD_VERSION)/apache/bin/apachectl restart
 
 test: build
-	git clone --recursive https://github.com/matsumoto-r/ab-mruby.git
-	cd ab-mruby && make
-	cd ab-mruby && ./ab-mruby -m ../test/check1.rb -M ../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
-	cd ab-mruby && ./ab-mruby -m ../test/check.rb -M ../test/test.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
+	cd build && git clone --recursive https://github.com/matsumoto-r/ab-mruby.git
+	cd build/ab-mruby && make
+	cd build/ab-mruby && ./ab-mruby -m ../test/check1.rb -M ../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
+	cd build/ab-mruby && ./ab-mruby -m ../test/check.rb -M ../test/test.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
 
 test2:
-	cd ab-mruby && ./ab-mruby -m ../test/check.rb -M ../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
+	cd build/ab-mruby && ./ab-mruby -m ../test/check.rb -M ../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
 
 
 .PHONY: test build
