@@ -76,13 +76,14 @@ build:
 	make APXS=build/$(HTTPD_VERSION)/apache/bin/apxs APACHECTL=build/$(HTTPD_VERSION)/apache/bin/apachectl restart
 
 test: build
-	cd build && git clone --recursive https://github.com/matsumoto-r/ab-mruby.git
+	cd build && test -e ab-mruby || git clone --recursive https://github.com/matsumoto-r/ab-mruby.git
 	cd build/ab-mruby && make
-	cd build/ab-mruby && ./ab-mruby -m ../test/check1.rb -M ../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
-	cd build/ab-mruby && ./ab-mruby -m ../test/check.rb -M ../test/test.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
+	cd build/ab-mruby && ./ab-mruby -m ../../test/check1.rb -M ../../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
+	cd build/ab-mruby && ./ab-mruby -m ../../test/check.rb -M ../../test/test.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
+	killall httpd
 
 test2:
-	cd build/ab-mruby && ./ab-mruby -m ../test/check.rb -M ../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
+	cd build/ab-mruby && ./ab-mruby -m ../../test/check.rb -M ../../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
 
 
 .PHONY: test build
