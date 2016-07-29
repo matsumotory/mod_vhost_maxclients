@@ -112,35 +112,6 @@ env:
     APR_UTIL_TAR=${APR_UTIL}.tar.gz 
     APXS_CHECK_CMD="../${HTTPD_VERSION}/apache/bin/apachectl -v"
     VHOST_CONF="test/mod_vhost_maxclients_per_ip.conf.2.4.prefork"
-before_script:
-  - cd ../
-  - wget http://ftp.jaist.ac.jp/pub/apache//httpd/${HTTPD_TAR}
-  - tar xf ${HTTPD_TAR}
-  - cd ${HTTPD_VERSION}/srclib
-  - wget http://ftp.jaist.ac.jp/pub/apache//apr/${APR_TAR}
-  - wget http://ftp.jaist.ac.jp/pub/apache//apr/${APR_UTIL_TAR}
-  - tar xf ${APR_TAR}
-  - tar xf ${APR_UTIL_TAR}
-  - ln -s ${APR} apr
-  - ln -s ${APR_UTIL} apr-util
-  - cd ..
-  - ./configure --prefix=`pwd`/apache --with-included-apr ${HTTPD_CONFIG_OPT}
-  - make
-  - make install
-  - cd ../mod_vhost_maxclients
-  - echo ${APXS_CHECK_CMD}
-  - ${APXS_CHECK_CMD}
-  - make APXS=../${HTTPD_VERSION}/apache/bin/apxs
-  - sudo cp test/sleep.cgi $(../${HTTPD_VERSION}/apache/bin/apxs -q exp_cgidir)/
-  - sudo sed -i "s/^Listen/#Listen/" $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
-  - sudo sed -i "s|__VHOST_DOCROOT__|$(../${HTTPD_VERSION}/apache/bin/apxs -q htdocsdir)|" ${VHOST_CONF}
-  - sudo cat ${VHOST_CONF} >> $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
-  - sudo make APXS=../${HTTPD_VERSION}/apache/bin/apxs APACHECTL=../${HTTPD_VERSION}/apache/bin/apachectl install
-  - sudo make APXS=../${HTTPD_VERSION}/apache/bin/apxs APACHECTL=../${HTTPD_VERSION}/apache/bin/apachectl restart
-  # debug
-  - sudo netstat -lnpt
-  - sudo cat $(../${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir)/$(../${HTTPD_VERSION}/apache/bin/apxs -q progname).conf
-  - curl -v -H "Host:test001.example.local" http://127.0.0.1:8080/cgi-bin/sleep.cgi
 script:
   # test1
   - make test

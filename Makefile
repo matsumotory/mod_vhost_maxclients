@@ -40,7 +40,42 @@ restart:
 stop:
 	$(APACHECTL) -k stop
 
-test:
+#
+# for apache2.4.x with worker env example
+# 
+HTTPD_VERSION=httpd-2.4.23
+HTTPD_CONFIG_OPT="--with-mpm=worker"
+APR=apr-1.5.2
+APR_UTIL=apr-util-1.5.4
+HTTPD_TAR=$(HTTPD_VERSION).tar.gz
+APR_TAR=$(APR).tar.gz
+APR_UTIL_TAR=$(APR_UTIL).tar.gz
+APXS_CHECK_CMD="./$(HTTPD_VERSION)/apache/bin/apachectl -v"
+VHOST_CONF="test/mod_vhost_maxclients.conf.2.4"
+
+build:
+	test -e build || mkdir build
+	cd build && test -e $(HTTPD_TAR) || wget http://ftp.jaist.ac.jp/pub/apache//httpd/$(HTTPD_TAR)
+	cd build && tar xf $(HTTPD_TAR)
+	cd build/$(HTTPD_VERSION)/srclib && test -e $(APR_TAR) || wget http://ftp.jaist.ac.jp/pub/apache//apr/$(APR_TAR)
+	cd build/$(HTTPD_VERSION)/srclib && test -e $(APR_UTIL_TAR) || wget http://ftp.jaist.ac.jp/pub/apache//apr/$(APR_UTIL_TAR)
+	cd build/$(HTTPD_VERSION)/srclib && tar xf $(APR_TAR)
+	cd build/$(HTTPD_VERSION)/srclib && tar xf $(APR_UTIL_TAR)
+	cd build/$(HTTPD_VERSION)/srclib && ln -sf $(APR) apr
+	cd build/$(HTTPD_VERSION)/srclib && ln -s f$(APR_UTIL) apr-util
+	cd build/$(HTTPD_VERSION) && ./configure --prefix=`pwd`/apache --with-included-apr $(HTTPD_CONFIG_OPT)
+	cd build/$(HTTPD_VERSION) && make
+	cd build/$(HTTPD_VERSION) && make install
+	cd build && $(APXS_CHECK_CMD)
+	make APXS=/$(HTTPD_VERSION)/apache/bin/apxs
+	cp test/sleep.cgi `build/$(HTTPD_VERSION)/apache/bin/apxs -q exp_cgidir`/
+	sed -i "s/^Listen/#Listen/" `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf
+	sed -i "s|__VHOST_DOCROOT__|`build/$(HTTPD_VERSION)/apache/bin/apxs -q htdocsdir`|" $(VHOST_CONF)
+	cat $(VHOST_CONF) >> `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf
+	make APXS=$(HTTPD_VERSION)/apache/bin/apxs APACHECTL=$(HTTPD_VERSION)/apache/bin/apachectl install
+	make APXS=$(HTTPD_VERSION)/apache/bin/apxs APACHECTL=$(HTTPD_VERSION)/apache/bin/apachectl restart
+
+test: build
 	git clone --recursive https://github.com/matsumoto-r/ab-mruby.git
 	cd ab-mruby && make
 	cd ab-mruby && ./ab-mruby -m ../test/check1.rb -M ../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
@@ -50,4 +85,4 @@ test2:
 	cd ab-mruby && ./ab-mruby -m ../test/check.rb -M ../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
 
 
-.PHONY: test
+.PHONY: test build
