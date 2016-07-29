@@ -93,5 +93,4 @@ test2: fixup_test2_conf
 	cd build/ab-mruby && ./ab-mruby -m ../../test/check.rb -M ../../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
 	killall httpd && sleep 1
 
-
 .PHONY: test build
