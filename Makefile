@@ -62,7 +62,7 @@ build:
 	cd build/$(HTTPD_VERSION)/srclib && tar xf $(APR_TAR)
 	cd build/$(HTTPD_VERSION)/srclib && tar xf $(APR_UTIL_TAR)
 	cd build/$(HTTPD_VERSION)/srclib && ln -sf $(APR) apr
-	cd build/$(HTTPD_VERSION)/srclib && ln -s f$(APR_UTIL) apr-util
+	cd build/$(HTTPD_VERSION)/srclib && ln -sf $(APR_UTIL) apr-util
 	cd build/$(HTTPD_VERSION) && ./configure --prefix=`pwd`/apache --with-included-apr $(HTTPD_CONFIG_OPT)
 	cd build/$(HTTPD_VERSION) && make
 	cd build/$(HTTPD_VERSION) && make install
