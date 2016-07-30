@@ -193,7 +193,7 @@ static int check_extension(char *filename, apr_array_header_t *exts)
   return 0;
 }
 
-static int check_time(apr_pool_t *p, unsigned int from, unsigned int to)
+static int check_time_slot(apr_pool_t *p, unsigned int from, unsigned int to)
 {
   unsigned int cur;
 
@@ -260,7 +260,7 @@ static int vhost_maxclients_handler(request_rec *r)
   }
 
   /* check time */
-  if (check_time(r->pool, scfg->vhost_maxclients_time_from, scfg->vhost_maxclients_time_to)) {
+  if (check_time_slot(r->pool, scfg->vhost_maxclients_time_from, scfg->vhost_maxclients_time_to)) {
     return DECLINED;
   }
 
