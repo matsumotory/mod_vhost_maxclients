@@ -81,6 +81,8 @@ typedef struct {
   signed int vhost_maxclients_log;
   signed int vhost_maxclients_per_ip;
   apr_array_header_t *ignore_extensions;
+  unsigned int vhost_maxclients_time_from;
+  unsigned int vhost_maxclients_time_to;
 
 } vhost_maxclients_config;
 
@@ -151,6 +153,8 @@ static void *vhost_maxclients_create_server_config(apr_pool_t *p, server_rec *s)
   scfg->vhost_maxclients_log = 0;
   scfg->vhost_maxclients_per_ip = 0;
   scfg->ignore_extensions = apr_array_make(p, VHOST_MAXEXTENSIONS, sizeof(char *));
+  scfg->vhost_maxclients_time_from = 0;
+  scfg->vhost_maxclients_time_to = 2359;
 
   return scfg;
 }
@@ -171,6 +175,8 @@ static void *vhost_maxclients_create_server_merge_conf(apr_pool_t *p, void *b, v
   scfg->vhost_maxclients_log = new->vhost_maxclients_log;
   scfg->vhost_maxclients_per_ip = new->vhost_maxclients_per_ip;
   scfg->ignore_extensions = new->ignore_extensions;
+  scfg->vhost_maxclients_time_from = new->vhost_maxclients_time_from;
+  scfg->vhost_maxclients_time_to = new->vhost_maxclients_time_to;
 
   return scfg;
 }
@@ -185,6 +191,25 @@ static int check_extension(char *filename, apr_array_header_t *exts)
       return 1;
   }
   return 0;
+}
+
+static int check_time_slot(apr_pool_t *p, unsigned int from, unsigned int to)
+{
+  unsigned int cur;
+
+  apr_time_exp_t tm;
+  apr_time_exp_lt(&tm, apr_time_now());
+  cur = atoi(apr_psprintf(p, "%02d%02d", tm.tm_hour, tm.tm_min));
+
+  if (from > to){
+    to += 2400;
+  }
+
+  if ((from < cur) && (to > cur)){
+    return 0;
+  }
+
+  return 1;
 }
 
 static char *build_vhostport_name(request_rec *r)
@@ -231,6 +256,11 @@ static int vhost_maxclients_handler(request_rec *r)
 
   /* check ignore extesions */
   if (check_extension(r->filename, scfg->ignore_extensions)) {
+    return DECLINED;
+  }
+
+  /* check time */
+  if (check_time_slot(r->pool, scfg->vhost_maxclients_time_from, scfg->vhost_maxclients_time_to)) {
     return DECLINED;
   }
 
@@ -419,6 +449,25 @@ static const char *set_vhost_ignore_extensions(cmd_parms *parms, void *mconfig, 
   return NULL;
 }
 
+static const char *set_vhost_maxclients_time(cmd_parms *parms, void *mconfig, const char *arg1, const char *arg2)
+{
+  vhost_maxclients_config *scfg =
+      (vhost_maxclients_config *)ap_get_module_config(parms->server->module_config, &vhost_maxclients_module);
+
+  scfg->vhost_maxclients_time_from = atoi(arg1);
+  scfg->vhost_maxclients_time_to = atoi(arg2);
+
+  if(scfg->vhost_maxclients_time_from < 0 || scfg->vhost_maxclients_time_from > 2359){
+    return "VhostMaxClientsTimeSlot_From is invalid. should be set range 0 < VhostMaxClientsTimeSlot_From < 2359";
+  }
+
+  if (scfg->vhost_maxclients_time_to < 0 || scfg->vhost_maxclients_time_to > 2359){
+    return "VhostMaxClientsTimeSlot_To is invalid. should be set range 0 < VhostMaxClientsTimeSlot_To < 2359";
+  }
+
+  return NULL;
+}
+
 static command_rec vhost_maxclients_cmds[] = {
     AP_INIT_FLAG("VhostMaxClientsDryRun", set_vhost_maxclients_dryrun, NULL, ACCESS_CONF | RSRC_CONF,
                  "Enable dry-run which don't return 503, logging only: On / Off (default Off)"),
@@ -431,7 +480,9 @@ static command_rec vhost_maxclients_cmds[] = {
     AP_INIT_TAKE1("VhostMaxClientsPerIP", set_vhost_maxclientsvhost_perip, NULL, RSRC_CONF | ACCESS_CONF,
                   "maximum connections per IP of Vhost"),
     AP_INIT_ITERATE("IgnoreVhostMaxClientsExt", set_vhost_ignore_extensions, NULL, ACCESS_CONF | RSRC_CONF,
-                    "Set Ignore Extensions."),
+                  "Set Ignore Extensions."),
+    AP_INIT_TAKE2("VhostMaxClientsTimeSlot", set_vhost_maxclients_time, NULL, RSRC_CONF | ACCESS_CONF,
+                  "Time to enable the VhostMaxClients. (default 0:00 ~ 23:59)"),
     {NULL},
 };
 
