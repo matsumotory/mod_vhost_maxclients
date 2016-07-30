@@ -482,7 +482,7 @@ static command_rec vhost_maxclients_cmds[] = {
     AP_INIT_ITERATE("IgnoreVhostMaxClientsExt", set_vhost_ignore_extensions, NULL, ACCESS_CONF | RSRC_CONF,
                   "Set Ignore Extensions."),
     AP_INIT_TAKE2("VhostMaxClientsTimeSlot", set_vhost_maxclients_time, NULL, RSRC_CONF | ACCESS_CONF,
-                  "Set Limit time."),
+                  "Time to enable the VhostMaxClients. (default 0:00 ~ 23:59)"),
     {NULL},
 };
 
