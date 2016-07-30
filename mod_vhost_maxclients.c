@@ -481,7 +481,7 @@ static command_rec vhost_maxclients_cmds[] = {
                   "maximum connections per IP of Vhost"),
     AP_INIT_ITERATE("IgnoreVhostMaxClientsExt", set_vhost_ignore_extensions, NULL, ACCESS_CONF | RSRC_CONF,
                   "Set Ignore Extensions."),
-    AP_INIT_TAKE2("VhostMaxClientsTime", set_vhost_maxclients_time, NULL, RSRC_CONF | ACCESS_CONF,
+    AP_INIT_TAKE2("VhostMaxClientsTimeSlot", set_vhost_maxclients_time, NULL, RSRC_CONF | ACCESS_CONF,
                   "Set Limit time."),
     {NULL},
 };
