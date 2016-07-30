@@ -195,10 +195,10 @@ static int check_extension(char *filename, apr_array_header_t *exts)
 
 static int check_time(apr_pool_t *p, unsigned int from, unsigned int to)
 {
+  unsigned int cur;
+
   apr_time_exp_t tm;
   apr_time_exp_lt(&tm, apr_time_now());
-
-  unsigned int cur;
   cur = atoi(apr_psprintf(p, "%02d%02d", tm.tm_hour, tm.tm_min));
 
   if (from > to){
