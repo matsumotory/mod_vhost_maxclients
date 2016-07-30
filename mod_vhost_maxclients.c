@@ -458,11 +458,11 @@ static const char *set_vhost_maxclients_time(cmd_parms *parms, void *mconfig, co
   scfg->vhost_maxclients_time_to = atoi(arg2);
 
   if(scfg->vhost_maxclients_time_from < 0 || scfg->vhost_maxclients_time_from > 2359){
-    return "the limit time from invalid number";
+    return "VhostMaxClientsTimeSlot_From is invalid. should be set range 0 < VhostMaxClientsTimeSlot_From < 2359";
   }
 
   if (scfg->vhost_maxclients_time_to < 0 || scfg->vhost_maxclients_time_to > 2359){
-    return "the limit time to invalid number";
+    return "VhostMaxClientsTimeSlot_To is invalid. should be set range 0 < VhostMaxClientsTimeSlot_To < 2359";
   }
 
   return NULL;
