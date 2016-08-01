@@ -32,6 +32,10 @@ install: all
 clean:
 	-rm -rf .libs *.o *.so *.lo *.la *.slo *.loT
 
+#   clobber
+clobber: clean
+	-rm -rf build
+
 #   the general Apache start/restart/stop procedures
 start:
 	$(APACHECTL) -k start
