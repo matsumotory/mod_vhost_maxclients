@@ -66,7 +66,6 @@ build:
 	cd build/$(HTTPD_VERSION) && test -e apache/bin/httpd || ./configure --prefix=`pwd`/apache --with-included-apr $(HTTPD_CONFIG_OPT)
 	cd build/$(HTTPD_VERSION) && test -e apache/bin/httpd || make -j10
 	cd build/$(HTTPD_VERSION) && test -e apache/bin/httpd || make install
-	cd build && bash -c $(APXS_CHECK_CMD)
 	make APXS=build/$(HTTPD_VERSION)/apache/bin/apxs
 	cp test/sleep.cgi `build/$(HTTPD_VERSION)/apache/bin/apxs -q exp_cgidir`/
 	sed -i "s/^Listen/#Listen/" `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf
