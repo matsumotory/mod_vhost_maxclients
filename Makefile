@@ -77,6 +77,7 @@ build:
 	cat $(VHOST_CONF) >> `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf
 	make APXS=build/$(HTTPD_VERSION)/apache/bin/apxs APACHECTL=build/$(HTTPD_VERSION)/apache/bin/apachectl install
 	make APXS=build/$(HTTPD_VERSION)/apache/bin/apxs APACHECTL=build/$(HTTPD_VERSION)/apache/bin/apachectl restart
+	sleep 2
 
 test1: build
 	cd build && test -e ab-mruby || git clone --recursive https://github.com/matsumoto-r/ab-mruby.git
@@ -94,7 +95,7 @@ fixup_test2_conf: test1
 	make APXS=build/${HTTPD_VERSION}/apache/bin/apxs APACHECTL=build/${HTTPD_VERSION}/apache/bin/apachectl stop
 	sleep 1
 	make APXS=build/${HTTPD_VERSION}/apache/bin/apxs APACHECTL=build/${HTTPD_VERSION}/apache/bin/apachectl start
-	sleep 1
+	sleep 2
 
 test2: fixup_test2_conf
 	cd build/ab-mruby && ./ab-mruby -m ../../test/check.rb -M ../../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
@@ -110,7 +111,7 @@ fixup_test3_conf: test2
 	make APXS=build/${HTTPD_VERSION}/apache/bin/apxs APACHECTL=build/${HTTPD_VERSION}/apache/bin/apachectl stop
 	sleep 1
 	make APXS=build/${HTTPD_VERSION}/apache/bin/apxs APACHECTL=build/${HTTPD_VERSION}/apache/bin/apachectl start
-	sleep 1
+	sleep 2
 
 test3: fixup_test3_conf
 	# complete all requests with 10 concurency for out of range of time slot
