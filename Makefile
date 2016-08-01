@@ -62,27 +62,35 @@ build:
 	cd build/$(HTTPD_VERSION)/srclib && tar xf $(APR_TAR)
 	cd build/$(HTTPD_VERSION)/srclib && tar xf $(APR_UTIL_TAR)
 	cd build/$(HTTPD_VERSION)/srclib && ln -sf $(APR) apr
-	cd build/$(HTTPD_VERSION)/srclib && ln -s f$(APR_UTIL) apr-util
-	cd build/$(HTTPD_VERSION) && ./configure --prefix=`pwd`/apache --with-included-apr $(HTTPD_CONFIG_OPT)
-	cd build/$(HTTPD_VERSION) && make
-	cd build/$(HTTPD_VERSION) && make install
-	cd build && $(APXS_CHECK_CMD)
-	make APXS=/$(HTTPD_VERSION)/apache/bin/apxs
+	cd build/$(HTTPD_VERSION)/srclib && ln -sf $(APR_UTIL) apr-util
+	cd build/$(HTTPD_VERSION) && test -e apache/bin/httpd || ./configure --prefix=`pwd`/apache --with-included-apr $(HTTPD_CONFIG_OPT)
+	cd build/$(HTTPD_VERSION) && test -e apache/bin/httpd || make -j10
+	cd build/$(HTTPD_VERSION) && test -e apache/bin/httpd || make install
+	cd build && bash -c $(APXS_CHECK_CMD)
+	make APXS=build/$(HTTPD_VERSION)/apache/bin/apxs
 	cp test/sleep.cgi `build/$(HTTPD_VERSION)/apache/bin/apxs -q exp_cgidir`/
 	sed -i "s/^Listen/#Listen/" `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf
 	sed -i "s|__VHOST_DOCROOT__|`build/$(HTTPD_VERSION)/apache/bin/apxs -q htdocsdir`|" $(VHOST_CONF)
 	cat $(VHOST_CONF) >> `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf
-	make APXS=$(HTTPD_VERSION)/apache/bin/apxs APACHECTL=$(HTTPD_VERSION)/apache/bin/apachectl install
-	make APXS=$(HTTPD_VERSION)/apache/bin/apxs APACHECTL=$(HTTPD_VERSION)/apache/bin/apachectl restart
+	make APXS=build/$(HTTPD_VERSION)/apache/bin/apxs APACHECTL=build/$(HTTPD_VERSION)/apache/bin/apachectl install
+	make APXS=build/$(HTTPD_VERSION)/apache/bin/apxs APACHECTL=build/$(HTTPD_VERSION)/apache/bin/apachectl restart
 
 test: build
-	git clone --recursive https://github.com/matsumoto-r/ab-mruby.git
-	cd ab-mruby && make
-	cd ab-mruby && ./ab-mruby -m ../test/check1.rb -M ../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
-	cd ab-mruby && ./ab-mruby -m ../test/check.rb -M ../test/test.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
+	cd build && test -e ab-mruby || git clone --recursive https://github.com/matsumoto-r/ab-mruby.git
+	cd build/ab-mruby && make
+	cd build/ab-mruby && ./ab-mruby -m ../../test/check1.rb -M ../../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
+	cd build/ab-mruby && ./ab-mruby -m ../../test/check.rb -M ../../test/test.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
+	killall httpd && sleep 1
 
-test2:
-	cd ab-mruby && ./ab-mruby -m ../test/check.rb -M ../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
+fixup_test2_conf:
+	echo "VhostMaxClientsDryRun On" >> `build/${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir`/`build/${HTTPD_VERSION}/apache/bin/apxs -q progname`.conf
+	make APXS=build/${HTTPD_VERSION}/apache/bin/apxs APACHECTL=build/${HTTPD_VERSION}/apache/bin/apachectl stop
+	sleep 1
+	make APXS=build/${HTTPD_VERSION}/apache/bin/apxs APACHECTL=build/${HTTPD_VERSION}/apache/bin/apachectl start
+	sleep 1
 
+test2: fixup_test2_conf
+	cd build/ab-mruby && ./ab-mruby -m ../../test/check.rb -M ../../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
+	killall httpd && sleep 1
 
 .PHONY: test build

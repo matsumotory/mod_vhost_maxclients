@@ -7,4 +7,5 @@ ExtendedStatus On
     ServerName test001.example.local
     VhostMaxClients 5
     VhostMaxClientsLogOnly 1
+    VhostMaxClientsTimeSlot 0000 2358
 </VirtualHost>
