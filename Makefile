@@ -74,6 +74,8 @@ build:
 	cp test/sleep.cgi `build/$(HTTPD_VERSION)/apache/bin/apxs -q exp_cgidir`/
 	grep -q "VirtualHost 127.0.0.1:8080" `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf || sed -i "s/^Listen/#Listen/" `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf
 	grep -q "VirtualHost 127.0.0.1:8080" `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf || sed -i "s|__VHOST_DOCROOT__|`build/$(HTTPD_VERSION)/apache/bin/apxs -q htdocsdir`|" $(VHOST_CONF)
+	grep -q "VirtualHost 127.0.0.1:8080" `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf || echo "" >> `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf
+	make APXS=build/$(HTTPD_VERSION)/apache/bin/apxs APACHECTL=build/$(HTTPD_VERSION)/apache/bin/apachectl install
 	grep -q "VirtualHost 127.0.0.1:8080" `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf || cat $(VHOST_CONF) >> `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf
 	make APXS=build/$(HTTPD_VERSION)/apache/bin/apxs APACHECTL=build/$(HTTPD_VERSION)/apache/bin/apachectl install
 	make APXS=build/$(HTTPD_VERSION)/apache/bin/apxs APACHECTL=build/$(HTTPD_VERSION)/apache/bin/apachectl stop
@@ -93,7 +95,7 @@ test1: build
 #
 fixup_test2_conf: test1
 	cp `build/${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir`/`build/${HTTPD_VERSION}/apache/bin/apxs -q progname`.conf `build/${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir`/`build/${HTTPD_VERSION}/apache/bin/apxs -q progname`.conf.orig
-	echo "VhostMaxClientsDryRun On" >> `build/${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir`/`build/${HTTPD_VERSION}/apache/bin/apxs -q progname`.conf
+	grep -q "VhostMaxClientsDryRun On" `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf || echo "VhostMaxClientsDryRun On" >> `build/${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir`/`build/${HTTPD_VERSION}/apache/bin/apxs -q progname`.conf
 	make APXS=build/${HTTPD_VERSION}/apache/bin/apxs APACHECTL=build/${HTTPD_VERSION}/apache/bin/apachectl stop
 	sleep 1
 	make APXS=build/${HTTPD_VERSION}/apache/bin/apxs APACHECTL=build/${HTTPD_VERSION}/apache/bin/apachectl start
@@ -109,7 +111,7 @@ test2: fixup_test2_conf
 #
 fixup_test3_conf: test2
 	cp `build/${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir`/`build/${HTTPD_VERSION}/apache/bin/apxs -q progname`.conf `build/${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir`/`build/${HTTPD_VERSION}/apache/bin/apxs -q progname`.conf.orig
-	sed -e "s/0000 2358/0000 0000/" `build/${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir`/`build/${HTTPD_VERSION}/apache/bin/apxs -q progname`.conf | tee `build/${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir`/`build/${HTTPD_VERSION}/apache/bin/apxs -q progname`.conf
+	sed -i "s/0000 2358/0000 0000/" `build/${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir`/`build/${HTTPD_VERSION}/apache/bin/apxs -q progname`.conf
 	make APXS=build/${HTTPD_VERSION}/apache/bin/apxs APACHECTL=build/${HTTPD_VERSION}/apache/bin/apachectl stop
 	sleep 1
 	make APXS=build/${HTTPD_VERSION}/apache/bin/apxs APACHECTL=build/${HTTPD_VERSION}/apache/bin/apachectl start
