@@ -3,9 +3,10 @@ LoadModule cgid_module modules/mod_cgid.so
 ExtendedStatus On
 
 <VirtualHost 127.0.0.1:8080>
-    DocumentRoot __VHOST_DOCROOT__
+    DocumentRoot /home/vagrant/mod_vhost_maxclients/build/httpd-2.4.23/apache/htdocs
     ServerName test001.example.local
     VhostMaxClients 5
     VhostMaxClientsLogOnly 1
     VhostMaxClientsLogPath /var/log/vhost_maxclients.log
+    VhostMaxClientsTimeSlot 0000 2358
 </VirtualHost>
