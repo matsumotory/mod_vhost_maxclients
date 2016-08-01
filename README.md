@@ -49,7 +49,7 @@ include /path/to/vhost.conf
     # logging only option which don't return 503, logging only
     # VhostMaxClientsLogOnly 10
     
-    # Time to enable the VhostMaxClients
+    # Time to enable the VhostMaxClients from 17:00 to 23:00 
     # VhostMaxClientsTimeSlot 1700 2300
 
 
