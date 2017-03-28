@@ -35,6 +35,7 @@
 
 #include "ap_mpm.h"
 #include "apr_strings.h"
+#include "ap_regex.h"
 #include "scoreboard.h"
 
 #define MODULE_NAME "mod_vhost_maxclients"
@@ -71,6 +72,7 @@ int ap_extended_status = 0;
 module AP_MODULE_DECLARE_DATA vhost_maxclients_module;
 static int vhost_maxclients_server_limit, vhost_maxclients_thread_limit;
 static apr_file_t *vhost_maxclients_log_fp = NULL;
+static ap_regex_t *regexpc = NULL;
 
 typedef struct {
 
@@ -81,6 +83,7 @@ typedef struct {
   signed int vhost_maxclients_log;
   signed int vhost_maxclients_per_ip;
   apr_array_header_t *ignore_extensions;
+  apr_array_header_t *ignore_request_regexp;
   unsigned int vhost_maxclients_time_from;
   unsigned int vhost_maxclients_time_to;
 
@@ -153,6 +156,7 @@ static void *vhost_maxclients_create_server_config(apr_pool_t *p, server_rec *s)
   scfg->vhost_maxclients_log = 0;
   scfg->vhost_maxclients_per_ip = 0;
   scfg->ignore_extensions = apr_array_make(p, VHOST_MAXEXTENSIONS, sizeof(char *));
+  scfg->ignore_request_regexp = apr_array_make(p, 1, sizeof(char *));
   scfg->vhost_maxclients_time_from = 0;
   scfg->vhost_maxclients_time_to = 2359;
 
@@ -175,6 +179,7 @@ static void *vhost_maxclients_create_server_merge_conf(apr_pool_t *p, void *b, v
   scfg->vhost_maxclients_log = new->vhost_maxclients_log;
   scfg->vhost_maxclients_per_ip = new->vhost_maxclients_per_ip;
   scfg->ignore_extensions = new->ignore_extensions;
+  scfg->ignore_request_regexp = new->ignore_request_regexp;
   scfg->vhost_maxclients_time_from = new->vhost_maxclients_time_from;
   scfg->vhost_maxclients_time_to = new->vhost_maxclients_time_to;
 
@@ -258,7 +263,7 @@ static int vhost_maxclients_handler(request_rec *r)
   if (check_extension(r->filename, scfg->ignore_extensions)) {
     return DECLINED;
   }
-
+  
   /* check time */
   if (check_time_slot(r->pool, scfg->vhost_maxclients_time_from, scfg->vhost_maxclients_time_to)) {
     return DECLINED;
@@ -285,6 +290,9 @@ static int vhost_maxclients_handler(request_rec *r)
       case SERVER_CLOSING:
       case SERVER_GRACEFUL:
         /* check maxclients per vhost */
+        if (regexpc == NULL || !ap_regexec(regexpc, ws_record->request, 0, NULL, 0)){
+            break;
+        }
         if (strcmp(vhostport, ws_record->vhost) == 0) {
           vhost_count++;
           ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "DEBUG: (increment %s): %d/%d", vhostport,
@@ -449,6 +457,24 @@ static const char *set_vhost_ignore_extensions(cmd_parms *parms, void *mconfig, 
   return NULL;
 }
 
+static const char *set_vhost_ignore_request_regexp(cmd_parms *parms, void *mconfig, const char *arg)
+{
+  vhost_maxclients_config *scfg =
+      (vhost_maxclients_config *)ap_get_module_config(parms->server->module_config, &vhost_maxclients_module);
+
+  *(const char **)apr_array_push(scfg->ignore_request_regexp) = arg;
+
+  if (1 < scfg->ignore_request_regexp->nelts) {
+    return "the number of ignore request regexp exceeded";
+  }
+  char **regexpi = (char **) scfg->ignore_request_regexp->elts;
+  regexpc = ap_pregcomp(parms->pool, (char *)regexpi[0], AP_REG_EXTENDED|AP_REG_ICASE);
+  if (regexpc == NULL)
+      return "regexp error";
+
+  return NULL;
+}
+
 static const char *set_vhost_maxclients_time(cmd_parms *parms, void *mconfig, const char *arg1, const char *arg2)
 {
   vhost_maxclients_config *scfg =
@@ -481,6 +507,8 @@ static command_rec vhost_maxclients_cmds[] = {
                   "maximum connections per IP of Vhost"),
     AP_INIT_ITERATE("IgnoreVhostMaxClientsExt", set_vhost_ignore_extensions, NULL, ACCESS_CONF | RSRC_CONF,
                   "Set Ignore Extensions."),
+    AP_INIT_TAKE1("IgnoreVhostMaxClientsRequestRegexp", set_vhost_ignore_request_regexp, NULL, ACCESS_CONF | RSRC_CONF,
+                  "Set Ignore Request."),
     AP_INIT_TAKE2("VhostMaxClientsTimeSlot", set_vhost_maxclients_time, NULL, RSRC_CONF | ACCESS_CONF,
                   "Time to enable the VhostMaxClients. (default 0:00 ~ 23:59)"),
     {NULL},
