@@ -1,4 +1,4 @@
-# mod_vhost_maxclients  [![Build Status](https://travis-ci.org/matsumoto-r/mod_vhost_maxclients.svg?branch=master)](https://travis-ci.org/matsumoto-r/mod_vhost_maxclients)
+# mod_vhost_maxclients  [![Build Status](https://travis-ci.org/matsumotory/mod_vhost_maxclients.svg?branch=master)](https://travis-ci.org/matsumotory/mod_vhost_maxclients)
 
 mod_vhost_maxclinets provides the feature of `MaxClients` per vhost, no using shared memory and global lock. This module use only scoreboad for stability(no dead-lock), high compatibility and simple implementation.
 
