@@ -11,23 +11,23 @@ env:
   #
   # for apache2.2.x with worler
   - HTTPD_VERSION=httpd-2.2.32
-    HTTPD_CONFIG_OPT="--with-mpm=worker\ --enable-module=all\ --enable-mods-shared=all"
+    HTTPD_CONFIG_OPT="--with-mpm=worker --enable-module=all --enable-mods-shared=all"
     APR=apr-1.5.2
     APR_UTIL=apr-util-1.5.4
     HTTPD_TAR=${HTTPD_VERSION}.tar.gz
     APR_TAR=${APR}.tar.gz
     APR_UTIL_TAR=${APR_UTIL}.tar.gz
-    APXS_CHECK_CMD="./${HTTPD_VERSION}/apache/bin/apachectl\ -v"
+    APXS_CHECK_CMD="./${HTTPD_VERSION}/apache/bin/apachectl -v"
     VHOST_CONF="conf/mod_vhost_maxclients.conf.2.2"
   # for apache2.2.x with prefork
   - HTTPD_VERSION=httpd-2.2.32
-    HTTPD_CONFIG_OPT="--with-mpm=prefork\ --enable-module=all\ --enable-mods-shared=all"
+    HTTPD_CONFIG_OPT="--with-mpm=prefork --enable-module=all --enable-mods-shared=all"
     APR=apr-1.5.2
     APR_UTIL=apr-util-1.5.4
     HTTPD_TAR=${HTTPD_VERSION}.tar.gz
     APR_TAR=${APR}.tar.gz
     APR_UTIL_TAR=${APR_UTIL}.tar.gz
-    APXS_CHECK_CMD="./${HTTPD_VERSION}/apache/bin/apachectl\ -v"
+    APXS_CHECK_CMD="./${HTTPD_VERSION}/apache/bin/apachectl -v"
     VHOST_CONF="conf/mod_vhost_maxclients.conf.2.2"
   # for apache2.4.x with event
   - HTTPD_VERSION=httpd-2.4.25
@@ -37,7 +37,7 @@ env:
     HTTPD_TAR=${HTTPD_VERSION}.tar.gz
     APR_TAR=${APR}.tar.gz
     APR_UTIL_TAR=${APR_UTIL}.tar.gz
-    APXS_CHECK_CMD="./${HTTPD_VERSION}/apache/bin/apachectl\ -v"
+    APXS_CHECK_CMD="./${HTTPD_VERSION}/apache/bin/apachectl -v"
     VHOST_CONF="conf/mod_vhost_maxclients.conf.2.4"
   # for apache2.4.x with worker
   - HTTPD_VERSION=httpd-2.4.25
@@ -47,7 +47,7 @@ env:
     HTTPD_TAR=${HTTPD_VERSION}.tar.gz
     APR_TAR=${APR}.tar.gz
     APR_UTIL_TAR=${APR_UTIL}.tar.gz
-    APXS_CHECK_CMD="./${HTTPD_VERSION}/apache/bin/apachectl\ -v"
+    APXS_CHECK_CMD="./${HTTPD_VERSION}/apache/bin/apachectl -v"
     VHOST_CONF="conf/mod_vhost_maxclients.conf.2.4"
   # for apache2.4.x with prefork
   - HTTPD_VERSION=httpd-2.4.25
@@ -57,30 +57,30 @@ env:
     HTTPD_TAR=${HTTPD_VERSION}.tar.gz
     APR_TAR=${APR}.tar.gz
     APR_UTIL_TAR=${APR_UTIL}.tar.gz
-    APXS_CHECK_CMD="./${HTTPD_VERSION}/apache/bin/apachectl\ -v"
+    APXS_CHECK_CMD="./${HTTPD_VERSION}/apache/bin/apachectl -v"
     VHOST_CONF="conf/mod_vhost_maxclients.conf.2.4.prefork"
   #
   # VhostMaxClientsPerIP TEST
   #
   # for apache2.2.x with worker
   - HTTPD_VERSION=httpd-2.2.32
-    HTTPD_CONFIG_OPT="--with-mpm=worker\ --enable-module=all\ --enable-mods-shared=all"
+    HTTPD_CONFIG_OPT="--with-mpm=worker --enable-module=all --enable-mods-shared=all"
     APR=apr-1.5.2
     APR_UTIL=apr-util-1.5.4
     HTTPD_TAR=${HTTPD_VERSION}.tar.gz
     APR_TAR=${APR}.tar.gz
     APR_UTIL_TAR=${APR_UTIL}.tar.gz
-    APXS_CHECK_CMD="./${HTTPD_VERSION}/apache/bin/apachectl\ -v"
+    APXS_CHECK_CMD="./${HTTPD_VERSION}/apache/bin/apachectl -v"
     VHOST_CONF="conf/mod_vhost_maxclients_per_ip.conf.2.2"
   # for apache2.2.x with prefork
   - HTTPD_VERSION=httpd-2.2.32
-    HTTPD_CONFIG_OPT="--with-mpm=prefork\ --enable-module=all\ --enable-mods-shared=all"
+    HTTPD_CONFIG_OPT="--with-mpm=prefork --enable-module=all --enable-mods-shared=all"
     APR=apr-1.5.2
     APR_UTIL=apr-util-1.5.4
     HTTPD_TAR=${HTTPD_VERSION}.tar.gz
     APR_TAR=${APR}.tar.gz
     APR_UTIL_TAR=${APR_UTIL}.tar.gz
-    APXS_CHECK_CMD="./${HTTPD_VERSION}/apache/bin/apachectl\ -v"
+    APXS_CHECK_CMD="./${HTTPD_VERSION}/apache/bin/apachectl -v"
     VHOST_CONF="conf/mod_vhost_maxclients_per_ip.conf.2.2"
   # for apache2.4.x with event
   - HTTPD_VERSION=httpd-2.4.25
@@ -90,7 +90,7 @@ env:
     HTTPD_TAR=${HTTPD_VERSION}.tar.gz
     APR_TAR=${APR}.tar.gz
     APR_UTIL_TAR=${APR_UTIL}.tar.gz
-    APXS_CHECK_CMD="./${HTTPD_VERSION}/apache/bin/apachectl\ -v"
+    APXS_CHECK_CMD="./${HTTPD_VERSION}/apache/bin/apachectl -v"
     VHOST_CONF="conf/mod_vhost_maxclients_per_ip.conf.2.4"
   # for apache2.4.x with worker
   - HTTPD_VERSION=httpd-2.4.25
@@ -100,7 +100,7 @@ env:
     HTTPD_TAR=${HTTPD_VERSION}.tar.gz
     APR_TAR=${APR}.tar.gz
     APR_UTIL_TAR=${APR_UTIL}.tar.gz
-    APXS_CHECK_CMD="./${HTTPD_VERSION}/apache/bin/apachectl\ -v"
+    APXS_CHECK_CMD="./${HTTPD_VERSION}/apache/bin/apachectl -v"
     VHOST_CONF="conf/mod_vhost_maxclients_per_ip.conf.2.4"
   # for apache2.4.x with prefork
   - HTTPD_VERSION=httpd-2.4.25
@@ -110,7 +110,7 @@ env:
     HTTPD_TAR=${HTTPD_VERSION}.tar.gz
     APR_TAR=${APR}.tar.gz
     APR_UTIL_TAR=${APR_UTIL}.tar.gz
-    APXS_CHECK_CMD="./${HTTPD_VERSION}/apache/bin/apachectl\ -v"
+    APXS_CHECK_CMD="./${HTTPD_VERSION}/apache/bin/apachectl -v"
     VHOST_CONF="conf/mod_vhost_maxclients_per_ip.conf.2.4.prefork"
 script:
   - make -e test

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+source default-build-config
+
 set -eux
 
 CUR_DIR=`pwd`
