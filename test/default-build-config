@@ -1,0 +1,12 @@
+set -x
+
+test -z "$HTTPD_VERSION"    && export HTTPD_VERSION=httpd-2.4.25
+test -z "$HTTPD_CONFIG_OPT" && export HTTPD_CONFIG_OPT="--with-mpm=worker"
+test -z "$APR"              && export APR=apr-1.5.2
+test -z "$APR_UTIL"         && export APR_UTIL=apr-util-1.5.4
+test -z "$HTTPD_TAR"        && export HTTPD_TAR=${HTTPD_VERSION}.tar.gz
+test -z "$APR_TAR"          && export APR_TAR=${APR}.tar.gz
+test -z "$APR_UTIL_TAR"     && export APR_UTIL_TAR=${APR_UTIL}.tar.gz
+test -z "$APXS_CHECK_CMD"   && export APXS_CHECK_CMD="./${HTTPD_VERSION}/apache/bin/apachectl -v"
+test -z "$VHOST_CONF"       && export VHOST_CONF="conf/mod_vhost_maxclients.conf.2.4"
+

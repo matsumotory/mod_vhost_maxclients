@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source default-build-config
+
 set -eux
 
 # basi test
