@@ -34,7 +34,7 @@ clean:
 
 #   clobber
 clobber: clean
-	-rm -rf build
+	-rm -rf test/build
 
 #   the general Apache start/restart/stop procedures
 start:
@@ -46,8 +46,9 @@ stop:
 
 #
 # for apache2.4.x with worker env example
-# 
-HTTPD_VERSION=httpd-2.4.23
+#
+
+HTTPD_VERSION=httpd-2.4.25
 HTTPD_CONFIG_OPT="--with-mpm=worker"
 APR=apr-1.5.2
 APR_UTIL=apr-util-1.5.4
@@ -55,75 +56,46 @@ HTTPD_TAR=$(HTTPD_VERSION).tar.gz
 APR_TAR=$(APR).tar.gz
 APR_UTIL_TAR=$(APR_UTIL).tar.gz
 APXS_CHECK_CMD="./$(HTTPD_VERSION)/apache/bin/apachectl -v"
-VHOST_CONF="test/mod_vhost_maxclients.conf.2.4"
+VHOST_CONF="conf/mod_vhost_maxclients.conf.2.4"
 
-build:
-	test -e build || mkdir build
-	cd build && test -e $(HTTPD_TAR) || wget http://ftp.jaist.ac.jp/pub/apache//httpd/$(HTTPD_TAR)
-	cd build && tar xf $(HTTPD_TAR)
-	cd build/$(HTTPD_VERSION)/srclib && test -e $(APR_TAR) || wget http://ftp.jaist.ac.jp/pub/apache//apr/$(APR_TAR)
-	cd build/$(HTTPD_VERSION)/srclib && test -e $(APR_UTIL_TAR) || wget http://ftp.jaist.ac.jp/pub/apache//apr/$(APR_UTIL_TAR)
-	cd build/$(HTTPD_VERSION)/srclib && tar xf $(APR_TAR)
-	cd build/$(HTTPD_VERSION)/srclib && tar xf $(APR_UTIL_TAR)
-	cd build/$(HTTPD_VERSION)/srclib && ln -sf $(APR) apr
-	cd build/$(HTTPD_VERSION)/srclib && ln -sf $(APR_UTIL) apr-util
-	cd build/$(HTTPD_VERSION) && test -e apache/bin/httpd || ./configure --prefix=`pwd`/apache --with-included-apr $(HTTPD_CONFIG_OPT)
-	cd build/$(HTTPD_VERSION) && test -e apache/bin/httpd || make -j10
-	cd build/$(HTTPD_VERSION) && test -e apache/bin/httpd || make install
-	make APXS=build/$(HTTPD_VERSION)/apache/bin/apxs
-	cp test/sleep.cgi `build/$(HTTPD_VERSION)/apache/bin/apxs -q exp_cgidir`/
-	grep -q "VirtualHost 127.0.0.1:8080" `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf || sed -i "s/^Listen/#Listen/" `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf
-	grep -q "VirtualHost 127.0.0.1:8080" `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf || sed -i "s|__VHOST_DOCROOT__|`build/$(HTTPD_VERSION)/apache/bin/apxs -q htdocsdir`|" $(VHOST_CONF)
-	grep -q "VirtualHost 127.0.0.1:8080" `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf || echo "" >> `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf
-	make APXS=build/$(HTTPD_VERSION)/apache/bin/apxs APACHECTL=build/$(HTTPD_VERSION)/apache/bin/apachectl install
-	grep -q "VirtualHost 127.0.0.1:8080" `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf || cat $(VHOST_CONF) >> `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf
-	make APXS=build/$(HTTPD_VERSION)/apache/bin/apxs APACHECTL=build/$(HTTPD_VERSION)/apache/bin/apachectl install
-	make APXS=build/$(HTTPD_VERSION)/apache/bin/apxs APACHECTL=build/$(HTTPD_VERSION)/apache/bin/apachectl stop
-	sleep 1
-	make APXS=build/$(HTTPD_VERSION)/apache/bin/apxs APACHECTL=build/$(HTTPD_VERSION)/apache/bin/apachectl start
-	sleep 2
+build_apache:
+	cd test && \
+	HTTPD_VERSION=$(HTTPD_VERSION) \
+	HTTPD_CONFIG_OPT=$(HTTPD_CONFIG_OPT) \
+	APR=$(APR) \
+	APR_UTIL=$(APR_UTIL) \
+	HTTPD_TAR=$(HTTPD_TAR) \
+	APR_TAR=$(APR_TAR) \
+	APR_UTIL_TAR=$(APR_UTIL_TAR) \
+	APXS_CHECK_CMD=$(APXS_CHECK_CMD) \
+	VHOST_CONF=$(VHOST_CONF) \
+	./build-apache.sh
 
-test1: build
-	cd build && test -e ab-mruby || git clone --recursive https://github.com/matsumoto-r/ab-mruby.git
-	cd build/ab-mruby && make
-	cd build/ab-mruby && ./ab-mruby -m ../../test/check1.rb -M ../../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
-	cd build/ab-mruby && ./ab-mruby -m ../../test/check.rb -M ../../test/test.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
-	killall httpd && sleep 1
+build_ab_mruby:
+	cd test && \
+	HTTPD_VERSION=$(HTTPD_VERSION) \
+	HTTPD_CONFIG_OPT=$(HTTPD_CONFIG_OPT) \
+	APR=$(APR) \
+	APR_UTIL=$(APR_UTIL) \
+	HTTPD_TAR=$(HTTPD_TAR) \
+	APR_TAR=$(APR_TAR) \
+	APR_UTIL_TAR=$(APR_UTIL_TAR) \
+	APXS_CHECK_CMD=$(APXS_CHECK_CMD) \
+	VHOST_CONF=$(VHOST_CONF) \
+	./build-ab-mruby.sh
 
-#
-# test for global dryrun
-#
-fixup_test2_conf: test1
-	cp `build/${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir`/`build/${HTTPD_VERSION}/apache/bin/apxs -q progname`.conf `build/${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir`/`build/${HTTPD_VERSION}/apache/bin/apxs -q progname`.conf.orig
-	grep -q "VhostMaxClientsDryRun On" `build/$(HTTPD_VERSION)/apache/bin/apxs -q sysconfdir`/`build/$(HTTPD_VERSION)/apache/bin/apxs -q progname`.conf || echo "VhostMaxClientsDryRun On" >> `build/${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir`/`build/${HTTPD_VERSION}/apache/bin/apxs -q progname`.conf
-	make APXS=build/${HTTPD_VERSION}/apache/bin/apxs APACHECTL=build/${HTTPD_VERSION}/apache/bin/apachectl stop
-	sleep 1
-	make APXS=build/${HTTPD_VERSION}/apache/bin/apxs APACHECTL=build/${HTTPD_VERSION}/apache/bin/apachectl start
-	sleep 2
-
-test2: fixup_test2_conf
-	cd build/ab-mruby && ./ab-mruby -m ../../test/check.rb -M ../../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
-	killall httpd && sleep 1
-	mv `build/${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir`/`build/${HTTPD_VERSION}/apache/bin/apxs -q progname`.conf.orig `build/${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir`/`build/${HTTPD_VERSION}/apache/bin/apxs -q progname`.conf
-
-#
-# test for out of range of time slot #8
-#
-fixup_test3_conf: test2
-	cp `build/${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir`/`build/${HTTPD_VERSION}/apache/bin/apxs -q progname`.conf `build/${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir`/`build/${HTTPD_VERSION}/apache/bin/apxs -q progname`.conf.orig
-	sed -i "s/0000 2358/0000 0000/" `build/${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir`/`build/${HTTPD_VERSION}/apache/bin/apxs -q progname`.conf
-	make APXS=build/${HTTPD_VERSION}/apache/bin/apxs APACHECTL=build/${HTTPD_VERSION}/apache/bin/apachectl stop
-	sleep 1
-	make APXS=build/${HTTPD_VERSION}/apache/bin/apxs APACHECTL=build/${HTTPD_VERSION}/apache/bin/apachectl start
-	sleep 2
-
-test3: fixup_test3_conf
-	# complete all requests with 10 concurency for out of range of time slot
-	cd build/ab-mruby && ./ab-mruby -m ../../test/check.rb -M ../../test/test1.rb http://127.0.0.1:8080/cgi-bin/sleep.cgi
-	killall httpd && sleep 1
-	mv `build/${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir`/`build/${HTTPD_VERSION}/apache/bin/apxs -q progname`.conf.orig `build/${HTTPD_VERSION}/apache/bin/apxs -q sysconfdir`/`build/${HTTPD_VERSION}/apache/bin/apxs -q progname`.conf
-
-# run all test chain dependency
-test: test3
+# run all test
+test: build_apache build_ab_mruby
+	cd test && \
+	HTTPD_VERSION=$(HTTPD_VERSION) \
+	HTTPD_CONFIG_OPT=$(HTTPD_CONFIG_OPT) \
+	APR=$(APR) \
+	APR_UTIL=$(APR_UTIL) \
+	HTTPD_TAR=$(HTTPD_TAR) \
+	APR_TAR=$(APR_TAR) \
+	APR_UTIL_TAR=$(APR_UTIL_TAR) \
+	APXS_CHECK_CMD=$(APXS_CHECK_CMD) \
+	VHOST_CONF=$(VHOST_CONF) \
+	./all-test-run.sh
 
 .PHONY: test build
