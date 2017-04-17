@@ -52,6 +52,9 @@ include /path/to/vhost.conf
     # Time to enable the VhostMaxClients from 17:00 to 23:00 
     # VhostMaxClientsTimeSlot 1700 2300
 
+    # Ignore Requests if it match regular expression.
+    # IgnoreVhostMaxClientsRequestRegexp '[jpg|gif|png] HTTP/1.[01]$'
+
 
 </VirtualHost>
 ```
