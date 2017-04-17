@@ -14,3 +14,7 @@ set -eux
 # Timeslot test
 ./setup/timeslot.sh
 ./test-case/timeslot.sh
+
+# RequestRegexp test
+./setup/regexp.sh
+./test-case/regexp.sh
