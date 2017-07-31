@@ -256,6 +256,10 @@ static int vhost_maxclients_handler(request_rec *r)
     return DECLINED;
   }
 
+  if (r->filename == NULL) {
+    return DECLINED;
+  }
+
   if (!ap_extended_status) {
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ap_server_conf, "DEBUG: only used when ExtendedStatus On");
     return DECLINED;
